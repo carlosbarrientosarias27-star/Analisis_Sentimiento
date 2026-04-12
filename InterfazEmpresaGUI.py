@@ -1,7 +1,7 @@
 # InicioSentimiento.py — Versión refactorizada con GUI
 import tkinter as tk
 from tkinter import ttk, messagebox
-from sentimiento.cliente import get_client
+from sentimiento.cliente import crear_cliente 
 from sentimiento.niveles import basico, intermedio, avanzado
 from almacenamiento.guardar import guardar_resultado
 from almacenamiento.leer import listar_analisis, leer_json
@@ -10,7 +10,7 @@ class AppSentimiento:
     def __init__(self, root):
         self.root = root
         self.root.title('Análisis de Sentimiento - Local')
-        self.client = get_client()
+        self.client = crear_cliente ()
         self._construir_interfaz()
  
     def _construir_interfaz(self):

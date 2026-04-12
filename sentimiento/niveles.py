@@ -5,6 +5,8 @@
 # No contiene lógica de red ni de I/O.
 # ============================================
 
+
+import json
 from typing import TypedDict
 
 
@@ -93,3 +95,46 @@ No incluyas texto adicional fuera del JSON.
 # ── Constante de modelo ───────────────────────────────────────────────────────
 
 MODELO_DEFAULT: str = "gpt-4o-mini"
+
+
+
+def basico(texto: str, client) -> ResultadoBasico:
+    respuesta = client.chat.completions.create(
+        model=MODELO_DEFAULT,
+        messages=[
+            {"role": "system", "content": PROMPT_BASICO},
+            {"role": "user", "content": texto}
+        ]
+    )
+    sentimiento = respuesta.choices[0].message.content.strip().lower()
+    return {
+        "nivel": "básico",
+        "sentimiento": sentimiento,
+        "texto_original": texto
+    }
+
+def intermedio(texto: str, client) -> ResultadoIntermedio:
+    respuesta = client.chat.completions.create(
+        model=MODELO_DEFAULT,
+        messages=[
+            {"role": "system", "content": PROMPT_INTERMEDIO},
+            {"role": "user", "content": texto}
+        ],
+        response_format={"type": "json_object"}
+    )
+    datos = json.loads(respuesta.choices[0].message.content)
+    datos.update({"nivel": "intermedio", "texto_original": texto})
+    return datos
+
+def avanzado(texto: str, client) -> ResultadoAvanzado:
+    respuesta = client.chat.completions.create(
+        model=MODELO_DEFAULT,
+        messages=[
+            {"role": "system", "content": PROMPT_AVANZADO},
+            {"role": "user", "content": texto}
+        ],
+        response_format={"type": "json_object"}
+    )
+    datos = json.loads(respuesta.choices[0].message.content)
+    datos.update({"nivel": "avanzado", "texto_original": texto})
+    return datos
