@@ -130,6 +130,10 @@ if __name__ == "__main__":
     print("\n[1] Analizando sentimiento...")
     resultado_avanzado = analizar_sentimiento_avanzado(texto_prueba)
 
+    # Aseguramos que el campo 'nivel' esté presente para que check_folders.py no falle
+    if "nivel" not in resultado_avanzado:
+        resultado_avanzado["nivel"] = "avanzado"
+
     # 2. Guardar (Esto genera los archivos que el script de verificación busca)
     print("[2] Guardando resultado en disco...")
     ruta = guardar_resultado(resultado_avanzado, prefijo="demo_avanzado")

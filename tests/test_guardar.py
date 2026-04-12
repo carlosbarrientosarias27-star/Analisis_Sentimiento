@@ -10,11 +10,10 @@ from almacenamiento.guardar import guardar_resultado, CARPETA_TXT, CARPETA_JSON
 
 @pytest.fixture
 def datos_ia():
-    """Simula la respuesta JSON de un modelo de IA."""
     return {
+        "nivel": "avanzado",  # <--- CRUCIAL: Añadir esto
         "sentimiento": "positivo",
-        "confianza": 0.98,
-        "detalles": {"emocion": "alegría"}
+        "confianza": 0.98
     }
 
 @pytest.fixture
