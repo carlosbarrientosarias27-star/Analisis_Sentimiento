@@ -54,7 +54,7 @@ def demo_niveles(texto: str) -> None:
     
     _json(res_avanzado)
     
-    Srutas = guardar_resultado(texto, res_avanzado)
+    rutas = guardar_resultado(texto, res_avanzado)
     # FIX: Removed the 'f' prefix as there are no placeholders
     print("\n✅ Guardado exitoso:") 
     print(f"   TXT: {rutas['txt'].name}")
