@@ -1,0 +1,39 @@
+# .github/workflows/ci.yml
+name: CI Pipeline — Análisis de Sentimiento
+ 
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+ 
+      - name: 1. Checkout del código
+        uses: actions/checkout@v4
+ 
+      - name: 2. Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+ 
+      - name: 3. Instalar dependencias
+        run: pip install -r requirements.txt
+ 
+      - name: 4. Ejecutar linter (ruff)
+        run: ruff check .
+ 
+      - name: 5. Tests unitarios
+        run: pytest tests/ -v
+ 
+      - name: 6. Cobertura de tests
+        run: pytest --cov=sentimiento --cov-report=term-missing
+ 
+      - name: 7. Verificar carpetas de resultados
+        run: python scripts/check_folders.py
+ 
+      - name: 8. Análisis de seguridad
+        run: bandit -r sentimiento/ almacenamiento/
