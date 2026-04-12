@@ -96,7 +96,7 @@ No incluyas texto adicional fuera del JSON.
 
 MODELO_DEFAULT: str = "gpt-4o-mini"
 
-
+# ── Funciones de Análisis ─────────────────────────────────────────────────────
 
 def basico(texto: str, client) -> ResultadoBasico:
     respuesta = client.chat.completions.create(
