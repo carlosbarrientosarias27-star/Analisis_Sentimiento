@@ -54,11 +54,11 @@ def demo_niveles(texto: str) -> None:
     
     _json(res_avanzado)
     
-    rutas = guardar_resultado(texto, res_avanzado)
-    print(f"\n✅ Guardado exitoso:")
+    Srutas = guardar_resultado(texto, res_avanzado)
+    # FIX: Removed the 'f' prefix as there are no placeholders
+    print("\n✅ Guardado exitoso:") 
     print(f"   TXT: {rutas['txt'].name}")
     print(f"   JSON: {rutas['json'].name}")
-
 
 # ── Demo 2: análisis por lotes ───────────────────────────────────────────────
 
@@ -108,16 +108,10 @@ def main() -> None:
     ]
 
     try:
-        # CREAMOS EL CLIENTE AQUÍ
-        cliente = crear_cliente() 
-        
-        # PASAMOS EL CLIENTE A LAS DEMOS
-        demo_niveles(cliente, texto_prueba) 
-        demo_multiples(reseñas) # Esta ya crea su cliente dentro, está bien.
+        # FIX: Removed 'cliente' argument here to match the function definition
+        demo_niveles(texto_prueba) 
+        demo_multiples(reseñas)
         demo_historial()
     except Exception as exc:
         print(f"\n❌ Error imprevisto: {exc}")
         sys.exit(1)
-
-if __name__ == "__main__":
-    main()
