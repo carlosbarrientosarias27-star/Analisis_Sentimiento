@@ -1,100 +1,61 @@
-# ============================================
 # almacenamiento/leer.py
-# Responsabilidad única: leer y listar resultados previamente guardados.
-# Complementa a guardar.py sin acoplamiento directo con él.
-# ============================================
-
 import json
 from pathlib import Path
 
+# Definimos las rutas de forma independiente para evitar acoplamiento circular
+_BASE_DIR = Path(__file__).parent / "resultados"
+CARPETA_TXT = _BASE_DIR / "txt"
+CARPETA_JSON = _BASE_DIR / "json"
 
-# Mismo directorio por defecto que guardar.py; se define de forma independiente
-# para evitar importar guardar.py y crear acoplamiento circular.
-_DIRECTORIO_RESULTADOS: Path = Path(__file__).parent / "resultados"
-
-
-def listar_archivos(directorio: Path | None = None) -> list[Path]:
+def listar_analisis() -> list[str]:
     """
-    Devuelve la lista de archivos JSON en el directorio de resultados,
+    Lista los nombres (stem) de todos los análisis guardados en JSON,
     ordenados del más reciente al más antiguo.
-
-    Args:
-        directorio: ruta opcional; usa el directorio por defecto si es None.
-
-    Returns:
-        Lista de Path ordenada por fecha de modificación descendente.
-        Lista vacía si el directorio no existe.
     """
-    destino: Path = directorio or _DIRECTORIO_RESULTADOS
-
-    if not destino.exists():
+    if not CARPETA_JSON.exists():
         return []
 
-    return sorted(
-        destino.glob("*.json"),
+    # Buscamos archivos .json y los ordenamos por fecha de modificación (mtime)
+    archivos = sorted(
+        CARPETA_JSON.glob("*.json"),
         key=lambda p: p.stat().st_mtime,
-        reverse=True,
+        reverse=True
     )
+    
+    # Devolvemos solo el nombre sin la extensión .json
+    return [f.stem for f in archivos]
 
-
-def leer_resultado(ruta: Path) -> dict:
+def leer_json(nombre: str) -> dict:
     """
-    Lee y deserializa un archivo JSON de resultado.
-
+    Lee un análisis guardado y lo devuelve como diccionario.
+    
     Args:
-        ruta: Path del archivo a leer.
-
-    Returns:
-        Diccionario con los datos del resultado.
-
-    Raises:
-        FileNotFoundError: si el archivo no existe.
-        json.JSONDecodeError: si el contenido no es JSON válido.
+        nombre: El nombre base del archivo (ej: 'analisis_2024-05-20_120000')
     """
+    ruta = CARPETA_JSON / f"{nombre}.json"
+    
     if not ruta.exists():
-        raise FileNotFoundError(f"El archivo no existe: {ruta}")
+        raise FileNotFoundError(f"No existe el análisis JSON: {nombre}")
 
     contenido = ruta.read_text(encoding="utf-8")
     return json.loads(contenido)
 
-
-def leer_ultimo(directorio: Path | None = None) -> dict | None:
+def leer_txt(nombre: str) -> str:
     """
-    Lee el resultado más reciente del directorio.
-
+    Lee el informe original o texto de entrada guardado en TXT.
+    
     Args:
-        directorio: ruta opcional; usa el directorio por defecto si es None.
-
-    Returns:
-        Diccionario con los datos del resultado más reciente,
-        o None si no hay archivos.
+        nombre: El nombre base del archivo.
     """
-    archivos = listar_archivos(directorio)
-    if not archivos:
-        return None
+    ruta = CARPETA_TXT / f"{nombre}.txt"
+    
+    if not ruta.exists():
+        raise FileNotFoundError(f"No existe el informe TXT: {nombre}")
 
-    return leer_resultado(archivos[0])
+    return ruta.read_text(encoding="utf-8")
 
-
-def leer_todos(directorio: Path | None = None) -> list[dict]:
+def leer_par_completo(nombre: str) -> tuple[str, dict]:
     """
-    Lee todos los resultados del directorio, del más reciente al más antiguo.
-
-    Args:
-        directorio: ruta opcional.
-
-    Returns:
-        Lista de diccionarios con todos los resultados.
-        Lista vacía si no hay archivos.
+    Utilidad para recuperar ambos archivos (TXT y JSON) de una sola vez.
     """
-    archivos = listar_archivos(directorio)
-
-    resultados: list[dict] = []
-    for ruta in archivos:
-        try:
-            resultados.append(leer_resultado(ruta))
-        except (json.JSONDecodeError, OSError):
-            # Archivo corrupto o sin permisos: se omite sin detener la ejecución
-            continue
-
-    return resultados
+    return leer_txt(nombre), leer_json(nombre)

@@ -1,1 +1,11 @@
+# Ignorar todos los archivos dentro de las carpetas de resultados
+almacenamiento/resultados/json/
+almacenamiento/resultados/txt/
+
+# Opcional: Si quieres ignorar toda la carpeta de resultados
+almacenamiento/resultados/
+
+# Ignorar archivos de caché de Python y de Pytest
+__pycache__/
+.pytest_cache/
 .env

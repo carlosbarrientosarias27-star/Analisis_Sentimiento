@@ -1,28 +1,27 @@
 import json
 import pytest
-# Eliminamos Path y MagicMock para satisfacer a ruff
 from unittest.mock import patch
 from datetime import datetime, timezone
 
-from almacenamiento.guardar import guardar_resultado, guardar_multiples
+# Importamos las funciones y las rutas de carpetas para validación
+from almacenamiento.guardar import guardar_resultado, CARPETA_TXT, CARPETA_JSON
 
 # --- FIXTURES ---
 
 @pytest.fixture
-def datos_validos():
-    """Retorna un diccionario de ejemplo similar a una respuesta de IA."""
+def datos_ia():
+    """Simula la respuesta JSON de un modelo de IA."""
     return {
-        "id": "chatcmpl-123",
-        "model": "gpt-4",
-        "choices": [{"text": "Respuesta de prueba"}]
+        "sentimiento": "positivo",
+        "confianza": 0.98,
+        "detalles": {"emocion": "alegría"}
     }
 
 @pytest.fixture
 def mock_now():
-    """Mock robusto para fijar la fecha y hora."""
+    """Mock robusto para fijar la fecha/hora y predecir nombres de archivos."""
     fixed_now = datetime(2026, 4, 12, 16, 30, 0, tzinfo=timezone.utc)
     
-    # Creamos una subclase de datetime para evitar problemas de inmutabilidad
     class MockDatetime(datetime):
         @classmethod
         def now(cls, tz=None):
@@ -33,72 +32,78 @@ def mock_now():
 
 # --- CASOS FELICES ---
 
-def test_guardar_resultado_exitoso(tmp_path, datos_validos, mock_now):
-    """Verifica que un archivo JSON se guarde correctamente en un directorio específico."""
-    prefijo = "test_ia"
-    ruta_generada = guardar_resultado(datos_validos, prefijo=prefijo, directorio=tmp_path)
+def test_guardar_resultado_crea_archivos_correctos(mock_now, datos_ia):
+    """Verifica que se generen tanto el TXT como el JSON con el formato esperado."""
+    texto = "Excelente servicio al cliente"
     
-    assert ruta_generada.exists()
-    assert ruta_generada.name == "test_ia_20260412_163000.json"
+    rutas = guardar_resultado(texto, datos_ia)
     
-    # Validar contenido
-    contenido = json.loads(ruta_generada.read_text(encoding="utf-8"))
-    assert contenido["id"] == "chatcmpl-123"
+    # Validar que el diccionario de retorno tiene las llaves correctas
+    assert 'txt' in rutas
+    assert 'json' in rutas
+    
+    # Validar nombres de archivos basados en el mock_now (2026-04-12_163000)
+    assert "analisis_2026-04-12_163000.txt" in rutas['txt']
+    assert "analisis_2026-04-12_163000.json" in rutas['json']
 
-def test_guardar_multiples_exitoso(tmp_path, datos_validos, mock_now):
-    """Verifica la persistencia de una lista de resultados bajo una llave contenedora."""
-    lista_resultados = [datos_validos, datos_validos]
-    ruta_generada = guardar_multiples(lista_resultados, prefijo="batch", directorio=tmp_path)
+def test_contenido_persistido_correctamente(datos_ia):
+    """Verifica que el contenido guardado en los archivos sea íntegro."""
+    texto_input = "Prueba de integridad de datos"
+    rutas = guardar_resultado(texto_input, datos_ia)
     
-    contenido = json.loads(ruta_generada.read_text(encoding="utf-8"))
-    assert "resultados" in contenido
-    assert len(contenido["resultados"]) == 2
-    assert contenido["resultados"][0]["model"] == "gpt-4"
+    # Verificar TXT
+    with open(rutas['txt'], 'r', encoding='utf-8') as f:
+        assert f.read() == texto_input
+        
+    # Verificar JSON
+    with open(rutas['json'], 'r', encoding='utf-8') as f:
+        contenido_json = json.load(f)
+        assert contenido_json["sentimiento"] == "positivo"
 
-def test_creacion_automatica_directorio(tmp_path, datos_validos):
-    """Verifica que el script crea subdirectorios si estos no existen previamente."""
-    sub_dir = tmp_path / "nueva_carpeta" / "logs"
-    ruta_generada = guardar_resultado(datos_validos, directorio=sub_dir)
+def test_creacion_de_carpetas_automatica():
+    """Asegura que las carpetas 'txt' y 'json' se creen si no existen."""
+    # Forzamos la ejecución de la lógica de creación
+    guardar_resultado("test", {"res": "ok"})
     
-    assert sub_dir.exists()
-    assert ruta_generada.parent == sub_dir
+    assert CARPETA_TXT.exists()
+    assert CARPETA_JSON.exists()
 
 # --- CASOS BORDE ---
 
-def test_guardar_resultado_con_caracteres_especiales(tmp_path):
-    """Prueba la correcta codificación UTF-8 con emojis y acentos."""
-    datos = {"texto": "Acción confirmada 🚀", "idioma": "Español"}
-    ruta = guardar_resultado(datos, directorio=tmp_path)
+def test_guardar_texto_muy_largo(datos_ia):
+    """Prueba el comportamiento con un volumen de texto considerable."""
+    texto_largo = "IA " * 10000
+    rutas = guardar_resultado(texto_largo, datos_ia)
     
-    contenido_raw = ruta.read_text(encoding="utf-8")
-    assert "🚀" in contenido_raw
-    assert "Acción" in contenido_raw
+    with open(rutas['txt'], 'r', encoding='utf-8') as f:
+        assert len(f.read()) == len(texto_largo)
 
-def test_guardar_diccionario_vacio(tmp_path):
-    """Verifica que el sistema maneja correctamente estructuras de datos vacías."""
-    ruta = guardar_resultado({}, prefijo="vacio", directorio=tmp_path)
-    contenido = json.loads(ruta.read_text(encoding="utf-8"))
-    assert contenido == {}
+def test_guardar_con_caracteres_especiales():
+    """Verifica que UTF-8 maneje correctamente emojis y tildes."""
+    texto = "Mañana será un gran día 🌟"
+    datos = {"status": "confirmado ✅"}
+    
+    rutas = guardar_resultado(texto, datos)
+    
+    with open(rutas['json'], 'r', encoding='utf-8') as f:
+        contenido = json.load(f)
+        assert "✅" in contenido["status"]
 
 # --- CASOS DE ERROR ---
 
-def test_error_tipo_no_serializable(tmp_path):
-    """Debe lanzar TypeError si intentamos guardar objetos que JSON no soporta (ej. sets)."""
-    datos_invalidos = {
-        "timestamp": datetime.now(), # datetime directo no es serializable por defecto
-        "valores": {1, 2, 3}        # sets no son serializables
-    }
+def test_error_serializacion_json():
+    """Debe lanzar TypeError si el diccionario contiene objetos no serializables."""
+    datos_invalidos = {"fecha": datetime.now()} # datetime no es serializable directamente
     
     with pytest.raises(TypeError) as excinfo:
-        guardar_resultado(datos_invalidos, directorio=tmp_path)
+        guardar_resultado("texto", datos_invalidos)
     
-    assert "no serializables" in str(excinfo.value)
+    assert "Error al serializar JSON" in str(excinfo.value)
 
-def test_error_permisos_escritura(tmp_path, datos_validos):
-    """Verifica el comportamiento cuando no hay permisos de escritura (Simulado)."""
-    # Usamos mock para simular una falla de sistema (OSError) al escribir
-    with patch("pathlib.Path.write_text", side_effect=OSError("No hay espacio o permiso")):
+def test_error_permisos_sistema(datos_ia):
+    """Simula un error de escritura en disco para verificar la robustez."""
+    with patch("pathlib.Path.write_text", side_effect=OSError("Disco lleno")):
         with pytest.raises(OSError) as excinfo:
-            guardar_resultado(datos_validos, directorio=tmp_path)
+            guardar_resultado("test", datos_ia)
         
-        assert "No hay espacio o permiso" in str(excinfo.value)
+        assert "Disco lleno" in str(excinfo.value)

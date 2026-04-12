@@ -1,99 +1,45 @@
-# ============================================
 # almacenamiento/guardar.py
-# Responsabilidad única: serializar y persistir resultados en disco.
-# Usa pathlib para todas las rutas; nunca asume un directorio de trabajo.
-# ============================================
-
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Configuración de rutas relativas al archivo actual
+_BASE_DIR = Path(__file__).parent / "resultados"
+CARPETA_TXT = _BASE_DIR / "txt"
+CARPETA_JSON = _BASE_DIR / "json"
 
-# Directorio de resultados relativo al paquete de almacenamiento
-_DIRECTORIO_RESULTADOS: Path = Path(__file__).parent / "resultados"
+def _crear_carpetas():
+    """Asegura que existan las subcarpetas de resultados."""
+    CARPETA_TXT.mkdir(parents=True, exist_ok=True)
+    CARPETA_JSON.mkdir(parents=True, exist_ok=True)
 
-
-def _asegurar_directorio(directorio: Path) -> None:
+def guardar_resultado(texto_entrada: str, resultados: dict) -> dict:
     """
-    Crea el directorio si no existe (incluyendo padres).
-
-    Args:
-        directorio: ruta del directorio a verificar/crear.
+    Guarda el texto original en TXT y el análisis en JSON.
+    Devuelve un diccionario con las rutas de los archivos creados.
     """
-    directorio.mkdir(parents=True, exist_ok=True)
+    _crear_carpetas()
+    
+    # Usamos UTC para evitar problemas de zona horaria
+    timestamp = datetime.now(tz=timezone.utc).strftime('%Y-%m-%d_%H%M%S')
+    nombre_base = f'analisis_{timestamp}'
+    
+    ruta_txt = CARPETA_TXT / f"{nombre_base}.txt"
+    ruta_json = CARPETA_JSON / f"{nombre_base}.json"
 
+    # 1. Guardar el texto de entrada
+    ruta_txt.write_text(texto_entrada, encoding="utf-8")
 
-def _nombre_archivo_timestamp(prefijo: str) -> str:
-    """
-    Genera un nombre de archivo único basado en el prefijo y la fecha/hora UTC.
-
-    Args:
-        prefijo: etiqueta descriptiva (p. ej. 'basico', 'multiple').
-
-    Returns:
-        Nombre de archivo con formato '<prefijo>_YYYYMMDD_HHMMSS.json'.
-    """
-    marca = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
-    return f"{prefijo}_{marca}.json"
-
-
-def guardar_resultado(
-    resultado: dict,
-    prefijo: str = "resultado",
-    directorio: Path | None = None,
-) -> Path:
-    """
-    Serializa un resultado de análisis en un archivo JSON con marca de tiempo.
-
-    Args:
-        resultado: diccionario con los datos a persistir.
-        prefijo: etiqueta para el nombre del archivo.
-        directorio: ruta opcional donde guardar; usa el directorio por defecto si es None.
-
-    Returns:
-        Path del archivo creado.
-
-    Raises:
-        OSError: si no se puede escribir el archivo.
-        TypeError: si el resultado contiene tipos no serializables.
-    """
-    destino: Path = directorio or _DIRECTORIO_RESULTADOS
-    _asegurar_directorio(destino)
-
-    nombre = _nombre_archivo_timestamp(prefijo)
-    ruta_archivo: Path = destino / nombre
-
+    # 2. Guardar los resultados en JSON
     try:
-        ruta_archivo.write_text(
-            json.dumps(resultado, indent=2, ensure_ascii=False),
-            encoding="utf-8",
+        ruta_json.write_text(
+            json.dumps(resultados, indent=2, ensure_ascii=False),
+            encoding="utf-8"
         )
     except TypeError as exc:
-        raise TypeError(
-            f"El resultado contiene tipos no serializables a JSON: {exc}"
-        ) from exc
+        raise TypeError(f"Error al serializar JSON: {exc}")
 
-    return ruta_archivo
-
-
-def guardar_multiples(
-    resultados: list[dict],
-    prefijo: str = "multiple",
-    directorio: Path | None = None,
-) -> Path:
-    """
-    Serializa una lista de resultados en un único archivo JSON.
-
-    Args:
-        resultados: lista de diccionarios a persistir.
-        prefijo: etiqueta para el nombre del archivo.
-        directorio: ruta opcional donde guardar.
-
-    Returns:
-        Path del archivo creado.
-    """
-    return guardar_resultado(
-        resultado={"resultados": resultados},
-        prefijo=prefijo,
-        directorio=directorio,
-    )
+    return {
+        'txt': str(ruta_txt),
+        'json': str(ruta_json)
+    }
