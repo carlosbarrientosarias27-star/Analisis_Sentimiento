@@ -2,9 +2,9 @@
 # ANÁLISIS DE SENTIMIENTO AVANZADO
 # ============================================
 import os
-
+import json  # Se añadió el import de json que faltaba
+from openai import OpenAI
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -52,7 +52,7 @@ def analizar_sentimiento_intermedio(texto: str) -> dict:
         resultado["nivel"] = "intermedio"
         resultado["texto_original"] = texto[:100] + "..."
         return resultado
-    except:
+    except Exception: # Se cambió 'except:' por 'except Exception:' (E722)
         return {
             "nivel": "intermedio",
             "error": "No se pudo parsear respuesta",
@@ -84,14 +84,14 @@ def analizar_sentimiento_avanzado(texto: str) -> dict:
         resultado["nivel"] = "avanzado"
         resultado["texto_original"] = texto[:100] + "..."
         return resultado
-    except:
+    except Exception: # Se cambió 'except:' por 'except Exception:' (E722)
         return {
             "nivel": "avanzado",
             "error": "No se pudo parsear respuesta",
             "respuesta_raw": response.choices[0].message.content
         }
 
-def analizar_sentimiento_multitexto(textos: list) -> list:
+def analizar_sentimiento_multitexto(textos: list) -> dict: # Se cambió type hint de list a dict para el retorno
     """Analiza sentimiento de múltiples textos y calcula estadísticas"""
     
     resultados = []
@@ -116,26 +116,27 @@ def analizar_sentimiento_multitexto(textos: list) -> list:
     }
 
 # ========== DEMOSTRACIÓN ==========
-print("=" * 70)
-print("📊 ANÁLISIS DE SENTIMIENTO - COMPARATIVA DE NIVELES")
-print("=" * 70)
+if __name__ == "__main__": # Práctica recomendada por Ruff/QA
+    print("=" * 70)
+    print("📊 ANÁLISIS DE SENTIMIENTO - COMPARATIVA DE NIVELES")
+    print("=" * 70)
 
-texto_prueba = "El producto llegó rápido, pero la calidad no es lo que esperaba. La verdad, estoy un poco decepcionado."
+    texto_prueba = "El producto llegó rápido, pero la calidad no es lo que esperaba. La verdad, estoy un poco decepcionado."
 
-print(f"\n📝 Texto a analizar: {texto_prueba}")
-print("-" * 70)
+    print(f"\n📝 Texto a analizar: {texto_prueba}")
+    print("-" * 70)
 
-print("\n🔵 NIVEL BÁSICO:")
-resultado_basico = analizar_sentimiento_basico(texto_prueba)
-print(json.dumps(resultado_basico, indent=2, ensure_ascii=False))
+    print("\n🔵 NIVEL BÁSICO:")
+    resultado_basico = analizar_sentimiento_basico(texto_prueba)
+    print(json.dumps(resultado_basico, indent=2, ensure_ascii=False))
 
-print("\n🔵 NIVEL INTERMEDIO:")
-resultado_intermedio = analizar_sentimiento_intermedio(texto_prueba)
-print(json.dumps(resultado_intermedio, indent=2, ensure_ascii=False))
+    print("\n🔵 NIVEL INTERMEDIO:")
+    resultado_intermedio = analizar_sentimiento_intermedio(texto_prueba)
+    print(json.dumps(resultado_intermedio, indent=2, ensure_ascii=False))
 
-print("\n🔵 NIVEL AVANZADO:")
-resultado_avanzado = analizar_sentimiento_avanzado(texto_prueba)
-print(json.dumps(resultado_avanzado, indent=2, ensure_ascii=False))
+    print("\n🔵 NIVEL AVANZADO:")
+    resultado_avanzado = analizar_sentimiento_avanzado(texto_prueba)
+    print(json.dumps(resultado_avanzado, indent=2, ensure_ascii=False))
 
 # Análisis de múltiples textos (ejemplo de reseñas)
 print("\n" + "=" * 70)

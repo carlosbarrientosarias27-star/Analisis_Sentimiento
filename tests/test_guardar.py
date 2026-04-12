@@ -1,15 +1,9 @@
 import json
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+# Eliminamos Path y MagicMock para satisfacer a ruff
+from unittest.mock import patch
 from datetime import datetime, timezone
 
-# Asumiendo que la estructura de carpetas es:
-# proyecto/
-# ├── almacenamiento/
-# │   └── guardar.py
-# └── tests/
-#     └── test_guardar.py
 from almacenamiento.guardar import guardar_resultado, guardar_multiples
 
 # --- FIXTURES ---

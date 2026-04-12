@@ -5,7 +5,7 @@
 # No contiene lógica de red ni de I/O.
 # ============================================
 
-from typing import TypedDict, Optional
+from typing import TypedDict
 
 
 # ── Modelos de datos ──────────────────────────────────────────────────────────

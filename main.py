@@ -8,7 +8,6 @@
 
 import json
 import sys
-from pathlib import Path
 
 from sentimiento.cliente import crear_cliente
 from sentimiento.analizador import analizar_basico, analizar_intermedio, analizar_avanzado
