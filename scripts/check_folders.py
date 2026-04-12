@@ -50,37 +50,32 @@ def verificar_carpetas_existen() -> bool:
 
 
 def verificar_archivos_json() -> bool:
-    """Comprueba que hay al menos MIN_ARCHIVOS_JSON archivos .json en resultados/."""
-    print("\n[2] Comprobando archivos JSON en almacenamiento/resultados/...")
+    """Comprueba archivos .json buscando ahora en la subcarpeta correcta."""
+    print("\n[2] Comprobando archivos JSON en almacenamiento/resultados/json/...")
 
-    if not CARPETA_RESULTADOS.is_dir():
-        error("La carpeta de resultados no existe, no se pueden comprobar archivos.")
+    # Apuntamos a la nueva subcarpeta de JSONs
+    carpeta_json = CARPETA_RESULTADOS / "json"
+    
+    if not carpeta_json.is_dir():
+        error(f"La carpeta {carpeta_json.relative_to(RAIZ)} no existe.")
         return False
 
-    jsons = sorted(CARPETA_RESULTADOS.glob("*.json"))
+    # Buscamos archivos .json (excluyendo el .gitkeep)
+    jsons = [f for f in carpeta_json.glob("*.json") if f.name != ".gitkeep"]
 
     if len(jsons) >= MIN_ARCHIVOS_JSON:
         ok(f"Se encontraron {len(jsons)} archivo(s) JSON")
-        for f in jsons:
-            ok(f"  → {f.name}")
+        return True
     else:
-        error(
-            f"Se esperaba al menos {MIN_ARCHIVOS_JSON} archivo(s) JSON "
-            f"pero se encontraron {len(jsons)}"
-        )
+        error(f"Se esperaba al menos {MIN_ARCHIVOS_JSON} JSONs pero se encontraron {len(jsons)}")
         return False
-
-    return True
-
 
 def verificar_json_validos() -> bool:
-    """Comprueba que cada archivo .json es JSON válido y tiene la clave 'nivel'."""
+    """Valida el contenido buscando en la subcarpeta json/."""
     print("\n[3] Validando contenido de los archivos JSON...")
-
-    if not CARPETA_RESULTADOS.is_dir():
-        return False
-
-    jsons = sorted(CARPETA_RESULTADOS.glob("*.json"))
+    
+    carpeta_json = CARPETA_RESULTADOS / "json"
+    jsons = [f for f in carpeta_json.glob("*.json") if f.name != ".gitkeep"]
     todo_ok = True
 
     for ruta in jsons:
