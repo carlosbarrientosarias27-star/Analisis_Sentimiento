@@ -27,11 +27,11 @@ MIN_ARCHIVOS_JSON = 1  # al menos un resultado debe haberse generado
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def ok(mensaje: str) -> None:
-    print(f"  ✓  {mensaje}")
+    print(f"  [OK] {mensaje}")
 
 
 def error(mensaje: str) -> None:
-    print(f"  ✗  {mensaje}", file=sys.stderr)
+    print(f"  [X] {mensaje}", file=sys.stderr)
 
 
 # ── Verificaciones ────────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ def verificar_json_validos() -> bool:
                     error(f"{ruta.name}: falta el campo 'nivel'")
                     todo_ok = False
                 else:
-                    ok(f"{ruta.name} → nivel={entrada['nivel']}")
+                    ok(f"{ruta.name} -> nivel={entrada['nivel']}")
 
         except json.JSONDecodeError as exc:
             error(f"{ruta.name}: JSON malformado — {exc}")
@@ -111,7 +111,7 @@ def verificar_json_validos() -> bool:
 
 def main() -> None:
     print("=" * 55)
-    print("  check_folders.py — verificación de resultados")
+    print("  check_folders.py - verificacion de resultados")
     print("=" * 55)
 
     checks = [
@@ -122,12 +122,12 @@ def main() -> None:
 
     print("\n" + "=" * 55)
     if all(checks):
-        print("  RESULTADO: todas las verificaciones pasaron ✓")
+        print("  RESULTADO: todas las verificaciones pasaron [OK]")
         print("=" * 55)
         sys.exit(0)
     else:
         fallos = checks.count(False)
-        print(f"  RESULTADO: {fallos} verificación(es) fallaron ✗")
+        print(f"  RESULTADO: {fallos} verificación(es) fallaron [X]")
         print("=" * 55)
         sys.exit(1)
 
