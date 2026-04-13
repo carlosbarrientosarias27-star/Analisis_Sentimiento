@@ -140,7 +140,7 @@ def analizar_avanzado(cliente: OpenAI, texto: str) -> ResultadoAvanzado:
 
     try:
         datos: dict = json.loads(respuesta_raw)
-        datos["nivel"] = "avanzado"
+        datos["nivel"] = "avanzado"  # <--- CRÍTICO
         datos["texto_original"] = _truncar(texto)
         return ResultadoAvanzado(**datos)  # type: ignore[arg-type]
     except (json.JSONDecodeError, TypeError) as exc:
