@@ -36,36 +36,30 @@ def demo_niveles(texto: str) -> None:
     _titulo("DEMO 1: NIVELES DE ANÁLISIS")
     cliente = crear_cliente()
 
-   # 1. NIVEL BÁSICO
+    # 1. NIVEL BÁSICO
     _seccion("NIVEL BÁSICO")
-    res_b = analizar_basico(cliente, texto)
-    # Convertir y asegurar nivel
-    datos_b = res_b.__dict__.copy()
-    datos_b["nivel"] = "básico"
+    res_b_obj = analizar_basico(cliente, texto)
+    datos_b = res_b_obj.__dict__.copy() # Convertimos a dict
+    datos_b["nivel"] = "básico"         # Inyectamos nivel
     _json(datos_b)
-    guardar_resultado(texto, datos_b)
-    
-   # 2. NIVEL INTERMEDIO
+    guardar_resultado(texto, datos_b)   # Guardamos el dict con nivel
+
+    # 2. NIVEL INTERMEDIO
     _seccion("NIVEL INTERMEDIO")
-    res_i = analizar_intermedio(cliente, texto)
-    # --- ESTO ES LO QUE ESTABA FALLANDO AHORA ---
-    datos_i = res_i.__dict__.copy()
-    datos_i["nivel"] = "intermedio"
+    res_i_obj = analizar_intermedio(cliente, texto)
+    datos_i = res_i_obj.__dict__.copy() # Convertimos a dict
+    datos_i["nivel"] = "intermedio"      # Inyectamos nivel
     _json(datos_i)
-    guardar_resultado(texto, datos_i)
+    guardar_resultado(texto, datos_i)   # Guardamos el dict con nivel
 
     # 3. NIVEL AVANZADO
     _seccion("NIVEL AVANZADO")
     res_a_obj = analizar_avanzado(cliente, texto)
-    # Convertir de forma segura para evitar rayas verdes del linter
-    if hasattr(res_a_obj, "__dict__"):
-        datos_a = res_a_obj.__dict__.copy()
-    else:
-        datos_a = dict(res_a_obj)
-    
-    datos_a["nivel"] = "avanzado"
+    # Conversión segura para evitar rayas verdes de Ruff/Linter
+    datos_a = res_a_obj.__dict__.copy() if hasattr(res_a_obj, "__dict__") else dict(res_a_obj)
+    datos_a["nivel"] = "avanzado"        # Inyectamos nivel
     _json(datos_a)
-    guardar_resultado(texto, datos_a)
+    guardar_resultado(texto, datos_a)   # Guardamos el dict con nivel
 
     # 2. Inyectamos el nivel (lo que pide el check_folders.py)
     datos_a["nivel"] = "avanzado"
