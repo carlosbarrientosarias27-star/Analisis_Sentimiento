@@ -33,8 +33,9 @@ def _json(datos: dict) -> None:
 # ── Demo 1: comparativa de niveles ───────────────────────────────────────────
 
 def demo_niveles(texto: str) -> None:
-    cliente = crear_cliente() # 1. Crea el cliente
-    
+    _titulo("DEMO 1: NIVELES DE ANÁLISIS")
+    cliente = crear_cliente()
+
     # Nivel Básico
     _seccion("NIVEL BÁSICO")
     res_basico = analizar_basico(texto)
@@ -52,7 +53,6 @@ def demo_niveles(texto: str) -> None:
     datos_a = res_a.__dict__.copy()
     datos_a["nivel"] = "avanzado"    # <--- INYECCIÓN MANUAL CRÍTICA
     guardar_resultado(texto, datos_a)
-    guardar_resultado(texto, datos_avanzado)
     
    # Convertimos el objeto a un diccionario real para que no de error
     # y para que el validador encuentre el campo 'nivel'
