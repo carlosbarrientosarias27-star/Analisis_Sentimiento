@@ -110,7 +110,7 @@ def analizar_intermedio(cliente: OpenAI, texto: str) -> ResultadoIntermedio:
 
     try:
         datos: dict = json.loads(respuesta_raw)
-        datos["nivel"] = "intermedio"
+        datos["nivel"] = "intermedio"  # <--- AQUÍ VA PARA EL ÉXITO
         datos["texto_original"] = _truncar(texto)
         return ResultadoIntermedio(**datos)  # type: ignore[arg-type]
     except (json.JSONDecodeError, TypeError) as exc:
