@@ -38,37 +38,29 @@ def demo_niveles(texto: str) -> None:
 
     # 1. NIVEL BÁSICO
     _seccion("NIVEL BÁSICO")
-    res_b_obj = analizar_basico(cliente, texto)
-    datos_b = res_b_obj.__dict__.copy() # Convertimos a dict
-    datos_b["nivel"] = "básico"         # Inyectamos nivel
+    res_b = analizar_basico(cliente, texto)
+    datos_b = res_b.__dict__.copy() # Convertimos a dict
+    datos_b["nivel"] = "básico"      # Inyectamos nivel
     _json(datos_b)
-    guardar_resultado(texto, datos_b)   # Guardamos el dict con nivel
+    guardar_resultado(texto, datos_b)
 
     # 2. NIVEL INTERMEDIO
     _seccion("NIVEL INTERMEDIO")
-    res_i_obj = analizar_intermedio(cliente, texto)
-    datos_i = res_i_obj.__dict__.copy() # Convertimos a dict
-    datos_i["nivel"] = "intermedio"      # Inyectamos nivel
+    res_i = analizar_intermedio(cliente, texto)
+    datos_i = res_i.__dict__.copy() # Convertimos a dict
+    datos_i["nivel"] = "intermedio"  # Inyectamos nivel
     _json(datos_i)
-    guardar_resultado(texto, datos_i)   # Guardamos el dict con nivel
+    guardar_resultado(texto, datos_i)
 
     # 3. NIVEL AVANZADO
     _seccion("NIVEL AVANZADO")
     res_a_obj = analizar_avanzado(cliente, texto)
-    # Conversión segura para evitar rayas verdes de Ruff/Linter
+    # Conversión segura para evitar errores de linter
     datos_a = res_a_obj.__dict__.copy() if hasattr(res_a_obj, "__dict__") else dict(res_a_obj)
-    datos_a["nivel"] = "avanzado"        # Inyectamos nivel
+    datos_a["nivel"] = "avanzado"     # Inyectamos nivel
     _json(datos_a)
-    guardar_resultado(texto, datos_a)   # Guardamos el dict con nivel
+    rutas=guardar_resultado(texto, datos_a)
 
-    # 2. Inyectamos el nivel (lo que pide el check_folders.py)
-    datos_a["nivel"] = "avanzado"
-    
-    _json(datos_a)
-    
-    # 3. Guardamos el diccionario que YA TIENE el nivel
-    rutas = guardar_resultado(texto, datos_a)
-    
     print("\n✅ Guardado exitoso:") 
     print(f"   TXT: {rutas['txt'].name}")
     print(f"   JSON: {rutas['json'].name}")
