@@ -1,6 +1,6 @@
 # InicioSentimiento.py — Versión refactorizada con GUI
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from sentimiento.cliente import crear_cliente 
 from sentimiento.niveles import basico, intermedio, avanzado
 from almacenamiento.guardar import guardar_resultado
