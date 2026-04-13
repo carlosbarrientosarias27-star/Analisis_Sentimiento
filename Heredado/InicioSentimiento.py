@@ -2,9 +2,9 @@
 # ANÁLISIS DE SENTIMIENTO AVANZADO
 # ============================================
 import os
-import json  # Se añadió el import de json que faltaba
-from openai import OpenAI
+from openai import OpenAI 
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -52,7 +52,7 @@ def analizar_sentimiento_intermedio(texto: str) -> dict:
         resultado["nivel"] = "intermedio"
         resultado["texto_original"] = texto[:100] + "..."
         return resultado
-    except Exception: # Se cambió 'except:' por 'except Exception:' (E722)
+    except:
         return {
             "nivel": "intermedio",
             "error": "No se pudo parsear respuesta",
@@ -84,14 +84,14 @@ def analizar_sentimiento_avanzado(texto: str) -> dict:
         resultado["nivel"] = "avanzado"
         resultado["texto_original"] = texto[:100] + "..."
         return resultado
-    except Exception: # Se cambió 'except:' por 'except Exception:' (E722)
+    except:
         return {
             "nivel": "avanzado",
             "error": "No se pudo parsear respuesta",
             "respuesta_raw": response.choices[0].message.content
         }
 
-def analizar_sentimiento_multitexto(textos: list) -> dict: # Se cambió type hint de list a dict para el retorno
+def analizar_sentimiento_multitexto(textos: list) -> list:
     """Analiza sentimiento de múltiples textos y calcula estadísticas"""
     
     resultados = []
@@ -115,41 +115,27 @@ def analizar_sentimiento_multitexto(textos: list) -> dict: # Se cambió type hin
         "estadisticas": estadisticas
     }
 
-# ========== BLOQUE DE EJECUCIÓN Y PERSISTENCIA ==========
-if __name__ == "__main__":
-    # Importación local para evitar dependencias circulares
-    from almacenamiento.guardar import guardar_resultado, guardar_multiples
+# ========== DEMOSTRACIÓN ==========
+print("=" * 70)
+print("📊 ANÁLISIS DE SENTIMIENTO - COMPARATIVA DE NIVELES")
+print("=" * 70)
 
-    print("=" * 70)
-    print("📊 ANÁLISIS Y PERSISTENCIA DE RESULTADOS")
-    print("=" * 70)
+texto_prueba = "El producto llegó rápido, pero la calidad no es lo que esperaba. La verdad, estoy un poco decepcionado."
 
-    texto_prueba = "El producto llegó rápido, pero la calidad no es lo que esperaba."
+print(f"\n📝 Texto a analizar: {texto_prueba}")
+print("-" * 70)
 
-    # 1. Analizar
-    print("\n[1] Analizando sentimiento...")
-    resultado_avanzado = analizar_sentimiento_avanzado(texto_prueba)
+print("\n🔵 NIVEL BÁSICO:")
+resultado_basico = analizar_sentimiento_basico(texto_prueba)
+print(json.dumps(resultado_basico, indent=2, ensure_ascii=False))
 
-    # Aseguramos que el campo 'nivel' esté presente para que check_folders.py no falle
-    if "nivel" not in resultado_avanzado:
-        resultado_avanzado["nivel"] = "avanzado"
+print("\n🔵 NIVEL INTERMEDIO:")
+resultado_intermedio = analizar_sentimiento_intermedio(texto_prueba)
+print(json.dumps(resultado_intermedio, indent=2, ensure_ascii=False))
 
-    # 2. Guardar (Esto genera los archivos que el script de verificación busca)
-    print("[2] Guardando resultado en disco...")
-    ruta = guardar_resultado(resultado_avanzado, prefijo="demo_avanzado")
-    print(f"✅ Archivo creado en: {ruta}")
-
-    # 3. Ejemplo múltiple
-    reseñas_batch = ["Excelente", "Pésimo servicio"]
-    print("\n[3] Procesando lote de reseñas...")
-    resultado_batch = analizar_sentimiento_multitexto(reseñas_batch)
-    
-    # Guardamos los resultados individuales en un solo archivo JSON
-    ruta_batch = guardar_multiples(
-        resultado_batch["resultados_individuales"], 
-        prefijo="batch_reseñas"
-    )
-    print(f"✅ Archivo batch creado en: {ruta_batch}")
+print("\n🔵 NIVEL AVANZADO:")
+resultado_avanzado = analizar_sentimiento_avanzado(texto_prueba)
+print(json.dumps(resultado_avanzado, indent=2, ensure_ascii=False))
 
 # Análisis de múltiples textos (ejemplo de reseñas)
 print("\n" + "=" * 70)
