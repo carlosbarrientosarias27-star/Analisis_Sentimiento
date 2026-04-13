@@ -4,7 +4,6 @@ from tkinter import ttk, messagebox
 from sentimiento.cliente import crear_cliente 
 from sentimiento.niveles import basico, intermedio, avanzado
 from almacenamiento.guardar import guardar_resultado
-from almacenamiento.leer import listar_analisis, leer_json
  
 class AppSentimiento:
     def __init__(self, root):
