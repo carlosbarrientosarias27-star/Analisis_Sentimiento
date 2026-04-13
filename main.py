@@ -49,19 +49,25 @@ def demo_niveles(texto: str) -> None:
 
     # Nivel Avanzado
     res_a = analizar_avanzado(cliente, texto)
-    resultado_obj = analizar_avanzado(cliente, texto)
+    res_a_obj = analizar_avanzado(cliente, texto)
     datos_a = res_a.__dict__.copy()
     datos_a["nivel"] = "avanzado"    # <--- INYECCIÓN MANUAL CRÍTICA
     guardar_resultado(texto, datos_a)
     
-   # Convertimos el objeto a un diccionario real para que no de error
-    # y para que el validador encuentre el campo 'nivel'
-    res_dict = resultado_obj.__dict__.copy()
-    res_dict["nivel"] = "avanzado"
+   # 1. Convertimos el objeto a diccionario de forma segura
+    # Esto elimina la "raya verde" porque ya no tratamos una clase como dict
+    if hasattr(res_a_obj, "__dict__"):
+        datos_a = res_a_obj.__dict__.copy()
+    else:
+        datos_a = dict(res_a_obj)
+
+    # 2. Inyectamos el nivel (lo que pide el check_folders.py)
+    datos_a["nivel"] = "avanzado"
     
-    _json(res_dict)
+    _json(datos_a)
     
-    rutas = guardar_resultado(texto, res_dict)
+    # 3. Guardamos el diccionario que YA TIENE el nivel
+    rutas = guardar_resultado(texto, datos_a)
     
     print("\n✅ Guardado exitoso:") 
     print(f"   TXT: {rutas['txt'].name}")
