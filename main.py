@@ -33,39 +33,36 @@ def _json(datos: dict) -> None:
 # ── Demo 1: comparativa de niveles ───────────────────────────────────────────
 
 def demo_niveles(texto: str) -> None:
-    _titulo("DEMO 1: NIVELES DE ANÁLISIS")
     cliente = crear_cliente() # 1. Crea el cliente
     
-    # Básico
+    # Nivel Básico
     _seccion("NIVEL BÁSICO")
     res_basico = analizar_basico(texto)
     _json(res_basico)
     
-    # 2. NIVEL INTERMEDIO
-    _seccion("NIVEL INTERMEDIO")
-    res_intermedio = analizar_intermedio(cliente, texto) # Pasa el cliente
-    # Convertimos a dict y aseguramos el campo 'nivel'
-    datos_intermedio = res_intermedio.__dict__.copy() 
-    datos_intermedio["nivel"] = "intermedio" 
-    _json(datos_intermedio)
-    guardar_resultado(texto, datos_intermedio) # Guarda con el campo nivel
+    # Nivel Intermedio
+    res_i = analizar_intermedio(cliente, texto)
+    datos_i = res_i.__dict__.copy()  # Convertimos el objeto a dict
+    datos_i["nivel"] = "intermedio"  # <--- INYECCIÓN MANUAL CRÍTICA
+    guardar_resultado(texto, datos_i)
 
-    # 3. NIVEL AVANZADO
-    _seccion("NIVEL AVANZADO")
-    res_avanzado = analizar_avanzado(cliente, texto)
-    # Aseguramos el campo 'nivel' para el validador
-    datos_avanzado = res_avanzado.__dict__.copy()
-    datos_avanzado["nivel"] = "avanzado"
-    _json(datos_avanzado)
+    # Nivel Avanzado
+    res_a = analizar_avanzado(cliente, texto)
+    resultado_obj = analizar_avanzado(cliente, texto)
+    datos_a = res_a.__dict__.copy()
+    datos_a["nivel"] = "avanzado"    # <--- INYECCIÓN MANUAL CRÍTICA
+    guardar_resultado(texto, datos_a)
     guardar_resultado(texto, datos_avanzado)
     
-    # IMPORTANTE: Aseguramos el nivel para el validador de GitHub
-    res_avanzado["nivel"] = "avanzado"
+   # Convertimos el objeto a un diccionario real para que no de error
+    # y para que el validador encuentre el campo 'nivel'
+    res_dict = resultado_obj.__dict__.copy()
+    res_dict["nivel"] = "avanzado"
     
-    _json(res_avanzado)
+    _json(res_dict)
     
-    rutas = guardar_resultado(texto, res_avanzado)
-    # FIX: Removed the 'f' prefix as there are no placeholders
+    rutas = guardar_resultado(texto, res_dict)
+    
     print("\n✅ Guardado exitoso:") 
     print(f"   TXT: {rutas['txt'].name}")
     print(f"   JSON: {rutas['json'].name}")
@@ -82,14 +79,14 @@ def demo_multiples(reseñas: list[str]) -> None:
     resultado = analizar_multitexto(cliente, reseñas)
     
     for reseña, res in zip(reseñas, resultado["resultados_individuales"]):
-        # Aseguramos que cada elemento de la lista tenga el nivel
-        if isinstance(res, dict):
-            res["nivel"] = "avanzado" 
+        # Si el resultado es un objeto, lo convertimos y forzamos el nivel
+        if hasattr(res, "__dict__"):
+            datos_res = res.__dict__.copy()
         else:
-            res = res.__dict__.copy()
-            res["nivel"] = "avanzado"
+            datos_res = dict(res)
             
-        guardar_resultado(reseña, res)
+        datos_res["nivel"] = "avanzado" # El validador exige esto
+        guardar_resultado(reseña, datos_res)
         
     _seccion("📈 ESTADÍSTICAS")
     stats = resultado["estadisticas"]
