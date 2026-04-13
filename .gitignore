@@ -1,5 +1,7 @@
 # Ignorar contenido de resultados pero mantener la carpeta
 almacenamiento/resultados/json/*
 almacenamiento/resultados/txt/*
+!Heredado/InicioSentimiento.py/* 
 !almacenamiento/resultados/json/.gitkeep
 !almacenamiento/resultados/txt/.gitkeep
+!Heredado/InicioSentimiento.py/.gitkeep 
