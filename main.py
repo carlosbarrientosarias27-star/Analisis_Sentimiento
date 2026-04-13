@@ -80,7 +80,17 @@ def demo_multiples(reseñas: list[str]) -> None:
 
     cliente = crear_cliente()
     resultado = analizar_multitexto(cliente, reseñas)
-
+    
+    for reseña, res in zip(reseñas, resultado["resultados_individuales"]):
+        # Aseguramos que cada elemento de la lista tenga el nivel
+        if isinstance(res, dict):
+            res["nivel"] = "avanzado" 
+        else:
+            res = res.__dict__.copy()
+            res["nivel"] = "avanzado"
+            
+        guardar_resultado(reseña, res)
+        
     _seccion("📈 ESTADÍSTICAS")
     stats = resultado["estadisticas"]
     print(f"   Total: {stats['total']} | Positivas: {stats['positivos']} | Negativas: {stats['negativos']}")
