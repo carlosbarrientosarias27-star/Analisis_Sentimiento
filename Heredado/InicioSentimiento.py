@@ -52,7 +52,7 @@ def analizar_sentimiento_intermedio(texto: str) -> dict:
         resultado["nivel"] = "intermedio"
         resultado["texto_original"] = texto[:100] + "..."
         return resultado
-    except:
+    except (json.JSONDecodeError, Exception): # Especificamos los errores
         return {
             "nivel": "intermedio",
             "error": "No se pudo parsear respuesta",
@@ -84,7 +84,7 @@ def analizar_sentimiento_avanzado(texto: str) -> dict:
         resultado["nivel"] = "avanzado"
         resultado["texto_original"] = texto[:100] + "..."
         return resultado
-    except:
+    except (json.JSONDecodeError, Exception): # Especificamos los errores
         return {
             "nivel": "avanzado",
             "error": "No se pudo parsear respuesta",
