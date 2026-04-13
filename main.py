@@ -36,30 +36,36 @@ def demo_niveles(texto: str) -> None:
     _titulo("DEMO 1: NIVELES DE ANÁLISIS")
     cliente = crear_cliente()
 
-    # Nivel Básico
+   # 1. NIVEL BÁSICO
     _seccion("NIVEL BÁSICO")
-    res_basico = analizar_basico(texto)
-    _json(res_basico)
+    res_b = analizar_basico(cliente, texto)
+    # Convertir y asegurar nivel
+    datos_b = res_b.__dict__.copy()
+    datos_b["nivel"] = "básico"
+    _json(datos_b)
+    guardar_resultado(texto, datos_b)
     
-    # Nivel Intermedio
+   # 2. NIVEL INTERMEDIO
+    _seccion("NIVEL INTERMEDIO")
     res_i = analizar_intermedio(cliente, texto)
-    datos_i = res_i.__dict__.copy()  # Convertimos el objeto a dict
-    datos_i["nivel"] = "intermedio"  # <--- INYECCIÓN MANUAL CRÍTICA
+    # --- ESTO ES LO QUE ESTABA FALLANDO AHORA ---
+    datos_i = res_i.__dict__.copy()
+    datos_i["nivel"] = "intermedio"
+    _json(datos_i)
     guardar_resultado(texto, datos_i)
 
-    # Nivel Avanzado
-    res_a = analizar_avanzado(cliente, texto)
+    # 3. NIVEL AVANZADO
+    _seccion("NIVEL AVANZADO")
     res_a_obj = analizar_avanzado(cliente, texto)
-    datos_a = res_a.__dict__.copy()
-    datos_a["nivel"] = "avanzado"    # <--- INYECCIÓN MANUAL CRÍTICA
-    guardar_resultado(texto, datos_a)
-    
-   # 1. Convertimos el objeto a diccionario de forma segura
-    # Esto elimina la "raya verde" porque ya no tratamos una clase como dict
+    # Convertir de forma segura para evitar rayas verdes del linter
     if hasattr(res_a_obj, "__dict__"):
         datos_a = res_a_obj.__dict__.copy()
     else:
         datos_a = dict(res_a_obj)
+    
+    datos_a["nivel"] = "avanzado"
+    _json(datos_a)
+    guardar_resultado(texto, datos_a)
 
     # 2. Inyectamos el nivel (lo que pide el check_folders.py)
     datos_a["nivel"] = "avanzado"
