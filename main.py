@@ -34,20 +34,30 @@ def _json(datos: dict) -> None:
 
 def demo_niveles(texto: str) -> None:
     _titulo("DEMO 1: NIVELES DE ANÁLISIS")
+    cliente = crear_cliente() # 1. Crea el cliente
     
     # Básico
     _seccion("NIVEL BÁSICO")
     res_basico = analizar_basico(texto)
     _json(res_basico)
     
-    # Intermedio
+    # 2. NIVEL INTERMEDIO
     _seccion("NIVEL INTERMEDIO")
-    res_intermedio = analizar_intermedio(texto)
-    _json(res_intermedio)
-    
-    # Avanzado y Persistencia
-    _seccion("NIVEL AVANZADO + PERSISTENCIA")
-    res_avanzado = analizar_avanzado(texto)
+    res_intermedio = analizar_intermedio(cliente, texto) # Pasa el cliente
+    # Convertimos a dict y aseguramos el campo 'nivel'
+    datos_intermedio = res_intermedio.__dict__.copy() 
+    datos_intermedio["nivel"] = "intermedio" 
+    _json(datos_intermedio)
+    guardar_resultado(texto, datos_intermedio) # Guarda con el campo nivel
+
+    # 3. NIVEL AVANZADO
+    _seccion("NIVEL AVANZADO")
+    res_avanzado = analizar_avanzado(cliente, texto)
+    # Aseguramos el campo 'nivel' para el validador
+    datos_avanzado = res_avanzado.__dict__.copy()
+    datos_avanzado["nivel"] = "avanzado"
+    _json(datos_avanzado)
+    guardar_resultado(texto, datos_avanzado)
     
     # IMPORTANTE: Aseguramos el nivel para el validador de GitHub
     res_avanzado["nivel"] = "avanzado"
