@@ -35,90 +35,88 @@ class AppSentimiento:
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Titulo
-        titulo = tk.Label(
-        main_frame,
-        # Agregué el símbolo 🗔 para imitar el icono de la imagen original
-        text="🗔 ANÁLISIS DE SENTIMIENTO - LOCAL", 
-        font=("Helvetica", 14, "bold"), # Ajusté un poco el tamaño para que sea más similar
-        bg="#f0f0f0",
-        fg="#2c3e50",
-        justify=tk.LEFT # Asegura que el texto multilínea (si hubiera) se alinee a la izquierda
-    )
-        titulo.pack(pady=10, side=tk.LEFT, anchor="w")
+    # --- TÍTULO (ARRIBA DE TODO - FUERA DEL PANEL DIVIDIDO) ---
+        # Esto asegura que el título esté arriba y no se mueva abajo
+        titulo_container = tk.Frame(main_frame, bg="#f0f0f0")
+        titulo_container.pack(fill=tk.X, side=tk.TOP, anchor="w", pady=(0, 15))
+      
+        
+        tk.Label(
+            titulo_container,
+            text=" 📊 ANÁLISIS DE SENTIMIENTO - LOCAL", 
+            font=("Helvetica", 16, "bold"), 
+            bg="#f0f0f0",
+            fg="#2c3e50"
+        ).pack(side=tk.LEFT, pady=5)
 
         # Marco de entrada de texto
-        entrada_frame = ttk.LabelFrame(main_frame, text="Texto a analizar", padding="10")
+        entrada_frame = ttk.LabelFrame(main_frame, text="📝Texto a analizar", padding="10")
         entrada_frame.pack(fill=tk.BOTH, expand=True, pady=5)
 
         self.texto_entrada = scrolledtext.ScrolledText(
             entrada_frame,
-            height=6,
+            height=4,
             font=("Arial", 11),
             wrap=tk.WORD
         )
         self.texto_entrada.pack(fill=tk.BOTH, expand=True)
 
-        # Marco de botones
+        # --- SECCIÓN DE BOTONES CORREGIDA ---
+        # Cambiamos anchor de tk.CENTER a tk.W (West/Oeste) para alinear a la izquierda
         botones_frame = tk.Frame(main_frame, bg="#f0f0f0")
-        botones_frame.pack(pady=10, anchor=tk.CENTER)
+        botones_frame.pack(pady=10, fill=tk.X, anchor=tk.W)
+
+        # Definimos un estilo común para los botones
+        # El width=20 (aproximadamente 160-180px) les da un tamaño uniforme
+        estilo_botones = {
+            "font": ("Arial", 11, "bold"),
+            "bg": "#95a5a6",
+            "fg": "white",
+            "activebackground": "#7f8c8d",
+            "activeforeground": "white",
+            "width": 22,  # Ajusta este valor para el ancho deseado
+            "pady": 5
+        }
 
         self.btn_analizar = tk.Button(
             botones_frame,
-            text="ANALIZAR SENTIMIENTO",
+            text="🔍 ANALIZAR SENTIMIENTO",
             command=self.analizar,
-            font=("Arial", 11, "bold"),
-            bg="#3498db",
-            fg="white",
-            activebackground="#2980b9",
-            activeforeground="white",
-            padx=20,
-            pady=8
+            **estilo_botones
         )
-        self.btn_analizar.pack(side=tk.LEFT, padx=10)
+        self.btn_analizar.pack(side=tk.LEFT, padx=(0, 10)) # Solo margen a la derecha
 
         self.btn_limpiar = tk.Button(
             botones_frame,
-            text="LIMPIAR",
+            text="🧹 LIMPIAR",
             command=self.limpiar,
-            font=("Arial", 11, "bold"),
-            bg="#95a5a6",
-            fg="white",
-            activebackground="#7f8c8d",
-            activeforeground="white",
-            padx=20,
-            pady=8
+            **estilo_botones
         )
         self.btn_limpiar.pack(side=tk.LEFT, padx=10)
 
         self.btn_guardar = tk.Button(
             botones_frame,
-            text="GUARDAR",
+            text="💾 GUARDAR",
             command=self.guardar_manual,
-            font=("Arial", 11, "bold"),
-            bg="#27ae60",
-            fg="white",
-            activebackground="#219150",
-            activeforeground="white",
-            padx=20,
-            pady=8
+            **estilo_botones
         )
         self.btn_guardar.pack(side=tk.LEFT, padx=10)
 
-        # Notebook para pestanas
+       # --- PESTAÑAS (Notebook) ---
+        # Usamos el estilo por defecto para que los iconos se vean como en la imagen
         self.notebook = ttk.Notebook(main_frame)
-        self.notebook.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.notebook.pack(fill=tk.BOTH, expand=False, pady=5)
 
-        # Pestanas
         self.tab_resultados = ttk.Frame(self.notebook)
         self.tab_detalle = ttk.Frame(self.notebook)
         self.tab_justificacion = ttk.Frame(self.notebook)
         self.tab_historial = ttk.Frame(self.notebook)
 
-        self.notebook.add(self.tab_resultados, text="Resultados por Nivel")
-        self.notebook.add(self.tab_detalle, text="Analisis Detallado")
-        self.notebook.add(self.tab_justificacion, text="Justificacion & Recomendacion")
-        self.notebook.add(self.tab_historial, text="Historial")
+        # Asegúrate de que no haya espacios extra entre el icono y el texto
+        self.notebook.add(self.tab_resultados, text="📋Resultados por Nivel")
+        self.notebook.add(self.tab_detalle, text="📖Análisis Detallado")
+        self.notebook.add(self.tab_justificacion, text="💡Justificación & Recomendación")
+        self.notebook.add(self.tab_historial, text="📜Historial")
 
         # Contenido de cada pestana
         self._crear_tabla_resultados()
@@ -128,7 +126,7 @@ class AppSentimiento:
 
         # Panel de ayuda - Polaridad
         ayuda_frame = ttk.LabelFrame(main_frame, text="¿Qué significa la polaridad?", padding="10")
-        ayuda_frame.pack(fill=tk.X, pady=5)
+        ayuda_frame.pack(fill=tk.X, pady=2, expand=False)
 
         # Crear las leyendas con colores individuales
         labels_ayuda = [
@@ -147,41 +145,62 @@ class AppSentimiento:
                 anchor="w"
             ).pack(fill=tk.X)
 
-        # Barra de estado
+      # --- MARCO INFERIOR (Sustituye tu bloque de barra_estado por este) ---
+        self.estado_frame = tk.Frame(main_frame, bd=1, relief=tk.SUNKEN, bg="#f0f0f0")
+        self.estado_frame.pack(fill=tk.X, side=tk.BOTTOM, pady=(2, 0))
+
+        # 1. El nuevo mensaje de "Análisis completado..." (Izquierda)
+        self.lbl_mensaje_final = tk.Label(
+            self.estado_frame,
+            text="Esperando análisis...", 
+            font=("Arial", 9),
+            anchor=tk.W,
+            bg="#f0f0f0"
+        )
+        self.lbl_mensaje_final.pack(side=tk.LEFT, padx=5, pady=2)
+
+        # 2. Tu Barra de estado ORIGINAL (Derecha)
+        # La mantenemos con el mismo nombre para que no de error el cliente
         self.barra_estado = tk.Label(
-            main_frame,
+            self.estado_frame,
             text="Listo",
             font=("Arial", 10),
             bg="#f0f0f0",
             fg="#7f8c8d",
-            anchor=tk.W,
-            width=80
+            anchor=tk.E, # Alineado a la derecha
+            width=40
         )
-        self.barra_estado.pack(pady=5)
+        self.barra_estado.pack(side=tk.RIGHT, padx=5, pady=2)
 
     def _crear_tabla_resultados(self):
-        frame = ttk.Frame(self.tab_resultados, padding="10")
+        frame = ttk.Frame(self.tab_resultados, padding="5") # Menos padding para ganar espacio
         frame.pack(fill=tk.BOTH, expand=True)
 
+        # Definir el estilo para quitar el borde azul al seleccionar
+        style = ttk.Style()
+        style.configure("Treeview", rowheight=25) # Filas un poco más altas
+
         self.tabla = ttk.Treeview(frame, columns=("Sentimiento", "Polaridad", "Intensidad"), height=5)
-        
-        # Configurar colores de las filas (Esto es lo que da el color verde de la imagen)
-        self.tabla.tag_configure('highlight', background='#e8f5e9') 
+    
+        # Configuración de color para la fila Intermedio (Verde muy suave)
+        self.tabla.tag_configure('highlight', background='#ebf5eb') 
 
-        self.tabla.heading("#0", text="Nivel")
-        self.tabla.heading("Sentimiento", text="Sentimiento")
-        self.tabla.heading("Polaridad", text="Polaridad")
-        self.tabla.heading("Intensidad", text="Intensidad")
+        # Encabezados (Asegúrate de que coincidan exactamente)
+        self.tabla.heading("#0", text="Nivel", anchor=tk.CENTER)
+        self.tabla.heading("Sentimiento", text="Sentimiento", anchor=tk.CENTER)
+        self.tabla.heading("Polaridad", text="Polaridad", anchor=tk.CENTER)
+        self.tabla.heading("Intensidad", text="Intensidad", anchor=tk.CENTER)
 
-        self.tabla.column("#0", width=150)
-        self.tabla.column("Sentimiento", anchor=tk.CENTER)
-        self.tabla.column("Polaridad", anchor=tk.CENTER)
-        self.tabla.column("Intensidad", anchor=tk.CENTER)
+         # Ajuste de anchos de columna según la imagen de la empresa
+        self.tabla.column("#0", width=200, minwidth=150)
+        self.tabla.column("Sentimiento", width=250, anchor=tk.CENTER)
+        self.tabla.column("Polaridad", width=250, anchor=tk.CENTER)
+        self.tabla.column("Intensidad", width=250, anchor=tk.CENTER)
 
-        # Insertar con IDs específicos y el tag de color para el nivel Intermedio
-        self.item_basico = self.tabla.insert("", tk.END, text="● Básico", values=("-", "-", "-"))
-        self.item_intermedio = self.tabla.insert("", tk.END, text="○ Intermedio", values=("-", "-", "-"), tags=('highlight',))
-        self.item_avanzado = self.tabla.insert("", tk.END, text="● Avanzado", values=("-", "-", "-"))
+        # Insertar filas con los símbolos correctos (● y ○)
+        self.item_basico = self.tabla.insert("", tk.END, text=" ● Básico", values=("-", "-", "-"))
+        self.item_intermedio = self.tabla.insert("", tk.END, text=" ○ Intermedio", values=("-", "-", "-"), tags=('highlight',))
+        self.item_avanzado = self.tabla.insert("", tk.END, text=" ● Avanzado", values=("-", "-", "-"))
 
         self.tabla.pack(fill=tk.BOTH, expand=True)
 
@@ -299,7 +318,10 @@ class AppSentimiento:
             self._mostrar_resultados(resultado_b, resultado_i, resultado_a)
             self.actualizar_historial()
 
-            self.barra_estado.config(text="Analisis completado y guardado automaticamente", fg="green")
+            self.lbl_mensaje_final.config(
+                text="☑ Análisis completado y guardado automáticamente", 
+                fg="#2c3e50" 
+            )
 
         except Exception as e:
             self.barra_estado.config(text=f"Error: {str(e)}", fg="red")
