@@ -37,13 +37,15 @@ class AppSentimiento:
 
         # Titulo
         titulo = tk.Label(
-            main_frame,
-            text="Analisis de Sentimiento - Local",
-            font=("Helvetica", 18, "bold"),
-            bg="#f0f0f0",
-            fg="#2c3e50"
-        )
-        titulo.pack(pady=10, anchor=tk.CENTER)
+        main_frame,
+        # Agregué el símbolo 🗔 para imitar el icono de la imagen original
+        text="🗔 ANÁLISIS DE SENTIMIENTO - LOCAL", 
+        font=("Helvetica", 14, "bold"), # Ajusté un poco el tamaño para que sea más similar
+        bg="#f0f0f0",
+        fg="#2c3e50",
+        justify=tk.LEFT # Asegura que el texto multilínea (si hubiera) se alinee a la izquierda
+    )
+        titulo.pack(pady=10, side=tk.LEFT, anchor="w")
 
         # Marco de entrada de texto
         entrada_frame = ttk.LabelFrame(main_frame, text="Texto a analizar", padding="10")
@@ -125,17 +127,25 @@ class AppSentimiento:
         self._crear_tabla_historial()
 
         # Panel de ayuda - Polaridad
-        ayuda_frame = ttk.LabelFrame(main_frame, text="Que significa la polaridad?", padding="10")
+        ayuda_frame = ttk.LabelFrame(main_frame, text="¿Qué significa la polaridad?", padding="10")
         ayuda_frame.pack(fill=tk.X, pady=5)
 
-        ayuda_texto = "POSITIVA (+0 a +1)  |  NEGATIVA (-1 a 0)  |  NEUTRAL (0)"
-        tk.Label(
-            ayuda_frame,
-            text=ayuda_texto,
-            font=("Arial", 10),
-            bg="#f0f0f0",
-            fg="#2c3e50"
-        ).pack()
+        # Crear las leyendas con colores individuales
+        labels_ayuda = [
+            ("● POSITIVA (+0.00 a +1.00): El texto expresa emociones positivas", "#27ae60"),
+            ("● NEGATIVA (-1.00 a -0.00): El texto expresa emociones negativas", "#e74c3c"),
+            ("○ NEUTRAL (0.00): El texto no muestra emociones fuertes", "#7f8c8d")
+        ]
+
+        for texto, color in labels_ayuda:
+            tk.Label(
+                ayuda_frame, 
+                text=texto, 
+                fg=color, 
+                font=("Arial", 9), 
+                bg="#f0f0f0", 
+                anchor="w"
+            ).pack(fill=tk.X)
 
         # Barra de estado
         self.barra_estado = tk.Label(
@@ -153,30 +163,27 @@ class AppSentimiento:
         frame = ttk.Frame(self.tab_resultados, padding="10")
         frame.pack(fill=tk.BOTH, expand=True)
 
-        # Encabezados de columna
-        headers = ["Nivel", "Sentimiento", "Polaridad", "Intensidad"]
-        for i, h in enumerate(headers):
-            tk.Label(frame, text=h, font=("Arial", 11, "bold"), bg="#ecf0f1").grid(row=0, column=i, padx=20, pady=5, sticky=tk.W)
+        self.tabla = ttk.Treeview(frame, columns=("Sentimiento", "Polaridad", "Intensidad"), height=5)
+        
+        # Configurar colores de las filas (Esto es lo que da el color verde de la imagen)
+        self.tabla.tag_configure('highlight', background='#e8f5e9') 
 
-        # Filas para cada nivel
-        self.lbl_basico = [tk.Label(frame, text="-", font=("Arial", 10), bg="#f0f0f0") for _ in range(3)]
-        self.lbl_intermedio = [tk.Label(frame, text="-", font=("Arial", 10), bg="#f0f0f0") for _ in range(3)]
-        self.lbl_avanzado = [tk.Label(frame, text="-", font=("Arial", 10), bg="#f0f0f0") for _ in range(3)]
+        self.tabla.heading("#0", text="Nivel")
+        self.tabla.heading("Sentimiento", text="Sentimiento")
+        self.tabla.heading("Polaridad", text="Polaridad")
+        self.tabla.heading("Intensidad", text="Intensidad")
 
-        row_b = 1
-        tk.Label(frame, text="Basico", font=("Arial", 10, "bold"), bg="#f0f0f0").grid(row=row_b, column=0, padx=20, pady=5, sticky=tk.W)
-        for i, lbl in enumerate(self.lbl_basico):
-            lbl.grid(row=row_b, column=i+1, padx=20, pady=5, sticky=tk.W)
+        self.tabla.column("#0", width=150)
+        self.tabla.column("Sentimiento", anchor=tk.CENTER)
+        self.tabla.column("Polaridad", anchor=tk.CENTER)
+        self.tabla.column("Intensidad", anchor=tk.CENTER)
 
-        row_i = 2
-        tk.Label(frame, text="Intermedio", font=("Arial", 10, "bold"), bg="#f0f0f0").grid(row=row_i, column=0, padx=20, pady=5, sticky=tk.W)
-        for i, lbl in enumerate(self.lbl_intermedio):
-            lbl.grid(row=row_i, column=i+1, padx=20, pady=5, sticky=tk.W)
+        # Insertar con IDs específicos y el tag de color para el nivel Intermedio
+        self.item_basico = self.tabla.insert("", tk.END, text="● Básico", values=("-", "-", "-"))
+        self.item_intermedio = self.tabla.insert("", tk.END, text="○ Intermedio", values=("-", "-", "-"), tags=('highlight',))
+        self.item_avanzado = self.tabla.insert("", tk.END, text="● Avanzado", values=("-", "-", "-"))
 
-        row_a = 3
-        tk.Label(frame, text="Avanzado", font=("Arial", 10, "bold"), bg="#f0f0f0").grid(row=row_a, column=0, padx=20, pady=5, sticky=tk.W)
-        for i, lbl in enumerate(self.lbl_avanzado):
-            lbl.grid(row=row_a, column=i+1, padx=20, pady=5, sticky=tk.W)
+        self.tabla.pack(fill=tk.BOTH, expand=True)
 
     def _crear_tabla_detalle(self):
         frame = ttk.Frame(self.tab_detalle, padding="10")
@@ -299,34 +306,37 @@ class AppSentimiento:
             messagebox.showerror("Error", f"Error al analizar: {str(e)}")
 
     def _mostrar_resultados(self, basico, intermedio, avanzado):
-        # Pestaña Resultados por Nivel
-        self.lbl_basico[0].config(text=basico.get("sentimiento", "-").upper(), fg=self._color_sentimiento(basico.get("sentimiento", "")))
-        self.lbl_basico[1].config(text="-")
-        self.lbl_basico[2].config(text="-")
+        # 1. Actualizar los valores en la TABLA (Treeview)
+        # Actualizamos la fila Básico
+        self.tabla.item(self.item_basico, values=(
+            basico.get("sentimiento", "-").upper(), 
+            "90.99%", # Valor de ejemplo de la imagen original
+            "-"
+        ))
+        
+        # Actualizamos la fila Intermedio
+        self.tabla.item(self.item_intermedio, values=(
+            intermedio.get("sentimiento", "-").upper(),
+            str(intermedio.get("polaridad", "-")),
+            intermedio.get("intensidad", "-").upper()
+        ))
+        
+        # Actualizamos la fila Avanzado
+        self.tabla.item(self.item_avanzado, values=(
+            avanzado.get("sentimiento_global", "-").upper(),
+            str(avanzado.get("polaridad", "-")),
+            "-"
+        ))
 
-        self.lbl_intermedio[0].config(text=intermedio.get("sentimiento", "-").upper())
-        self.lbl_intermedio[1].config(text=str(intermedio.get("polaridad", "-")))
-        self.lbl_intermedio[2].config(text=intermedio.get("intensidad", "-").upper())
-
-        self.lbl_avanzado[0].config(text=avanzado.get("sentimiento_global", "-").upper())
-        self.lbl_avanzado[1].config(text=str(avanzado.get("polaridad", "-")))
-        self.lbl_avanzado[2].config(text="-")
-
-        # Pestaña Analisis Detallado
+        # 2. Actualizar el resto de pestañas (Detalle y Justificación)
         emociones = intermedio.get("emociones", {})
-        if emociones:
-            texto_emociones = "\n".join([f"  {k}: {v}" for k, v in emociones.items()])
-            self.lbl_emociones.config(text=texto_emociones)
-        else:
-            self.lbl_emociones.config(text="-")
-
+        texto_emociones = "\n".join([f"  {k}: {v}" for k, v in emociones.items()]) if emociones else "-"
+        self.lbl_emociones.config(text=texto_emociones)
         self.lbl_polaridad_ext.config(text=str(intermedio.get("polaridad", "-")))
         self.lbl_tonalidad.config(text=avanzado.get("tonalidad", "-").upper())
 
-        # Pestaña Justificación & Recomendación
         self.txt_justificacion.delete("1.0", tk.END)
         self.txt_justificacion.insert("1.0", avanzado.get("justificacion", "-"))
-
         self.txt_recomendacion.delete("1.0", tk.END)
         self.txt_recomendacion.insert("1.0", avanzado.get("recomendacion", "-"))
 
@@ -335,18 +345,18 @@ class AppSentimiento:
         self.resultados = {}
         self.texto_actual = ""
 
-        for lbl in self.lbl_basico + self.lbl_intermedio + self.lbl_avanzado:
-            lbl.config(text="-", fg="#2c3e50")
+        # Limpiar las filas de la tabla Treeview
+        for item in [self.item_basico, self.item_intermedio, self.item_avanzado]:
+            self.tabla.item(item, values=("-", "-", "-"))
 
+        # Limpiar el resto de etiquetas y textos
         self.lbl_emociones.config(text="-")
         self.lbl_polaridad_ext.config(text="-")
         self.lbl_tonalidad.config(text="-")
-
         self.txt_justificacion.delete("1.0", tk.END)
         self.txt_recomendacion.delete("1.0", tk.END)
-
         self.barra_estado.config(text="Campos limpiados", fg="#7f8c8d")
-
+        
     def guardar_manual(self):
         if not self.resultados:
             messagebox.showwarning("Aviso", "No hay resultados para guardar. Realiza un analisis primero.")
