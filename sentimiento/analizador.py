@@ -44,16 +44,27 @@ def _llamar_api(
 # ── Análisis básico ───────────────────────────────────────────────────────────
 
 def analizar_basico(cliente, texto: str) -> ResultadoBasico:
+    """
+    Analiza el sentimiento básico. Asegura que el campo 'nivel' esté presente
+    para cumplir con las validaciones de carpeta.
+    """
     respuesta_raw = _llamar_api(cliente, PROMPT_BASICO, texto)
-    sentimiento = respuesta_raw.lower()
+    sentimiento_lower = respuesta_raw.lower()
 
-    if "positivo" in sentimiento:
-        return ResultadoBasico(nivel="básico", sentimiento="positivo", texto_original=_truncar(texto))
-    if "negativo" in sentimiento:
-        return ResultadoBasico(nivel="básico", sentimiento="negativo", texto_original=_truncar(texto))
-    
-    return ResultadoBasico(nivel="básico", sentimiento="neutro", texto_original=_truncar(texto))
+    # Determinamos la etiqueta
+    if "positivo" in sentimiento_lower:
+        label = "positivo"
+    elif "negativo" in sentimiento_lower:
+        label = "negativo"
+    else:
+        label = "neutro"
 
+    # Retornamos usando el TypedDict para asegurar consistencia
+    return ResultadoBasico(
+        nivel="básico",
+        sentimiento=label,
+        texto_original=_truncar(texto)
+    )
 
 # ── Análisis intermedio ───────────────────────────────────────────────────────
 
