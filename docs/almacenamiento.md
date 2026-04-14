@@ -16,10 +16,8 @@ almacenamiento/
 
 ## 2. Convención de Nombres
 
-|**Patrón:**|   analisis_YYYY-MM-DD_HHmmss.{json|txt} |
-|**Ejemplo:**|  analisis_2026-04-14_130903.json |
-                analisis_2026-04-14_131023.txt | 
-
+|**Patrón**|   analisis_YYYY-MM-DD_HHmmss.{json|txt} |
+|**Ejemplo**|  analisis_2026-04-14_130903.json | analisis_2026-04-14_131023.txt | 
 Los archivos JSON y TXT de un mismo análisis comparten exactamente
 el mismo sufijo de fecha/hora, lo que los vincula sin metadatos extra.
 
