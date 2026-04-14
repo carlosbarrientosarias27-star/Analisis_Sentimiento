@@ -7,8 +7,7 @@ Analiza el sentimiento de una cadena de texto y devuelve un diccionario con el s
 | Parámetro | Descripción / Tipo |
 | :--- | :--- |
 | **texto** | `str` — Texto en lenguaje natural a analizar. Longitud máxima recomendada: 512 tokens. |
-
-**Retorna:** `dict` — `{ 'score': float, 'positivo': float, 'neutral': float, 'negativo': float }`
+|**Retorna:**| `dict` — `{ 'score': float, 'positivo': float, 'neutral': float, 'negativo': float }
 
 from sentimiento.analizador import Analizador
 
