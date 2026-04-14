@@ -8,17 +8,11 @@ from sentimiento.analizador import analizar_basico, analizar_intermedio, analiza
 @pytest.fixture
 def mock_openai_client():
     """
-    Configura el mock para que responda a la cadena:
-    cliente.chat.completions.create(...)
+    Crea un objeto simulado genérico. 
+    Cambiamos MagicMock(OpenAI) por MagicMock() simple.
     """
     mock_client = MagicMock()
-    # Creamos la cadena de mocks
-    mock_chat = MagicMock()
-    mock_completions = MagicMock()
-    
-    mock_client.chat = mock_chat
-    mock_chat.completions = mock_completions
-    # El método .create es el que devolverá nuestra respuesta simulada
+    # Mantenemos la estructura de 'choices' por si tu analizador.py aún la usa
     return mock_client
 
 @pytest.fixture
