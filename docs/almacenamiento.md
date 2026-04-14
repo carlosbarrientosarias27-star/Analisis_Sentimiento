@@ -2,6 +2,7 @@
 El módulo almacenamiento/ gestiona la persistencia de los análisis en dos formatos complementarios: JSON (para consumo programático) y TXT (para lectura humana).
 
 ## 1. Estructura de Directorios
+```
 almacenamiento/
 ├── __init__.py
 ├── guardar.py          # escritura de resultados
@@ -11,6 +12,7 @@ almacenamiento/
     │   └── .gitkeep
     └── txt/            # archivos .txt
         └── .gitkeep
+```
 
 ## 2. Convención de Nombres
 Patrón:   analisis_YYYY-MM-DD_HHmmss.{json|txt}
@@ -34,13 +36,15 @@ Cada archivo JSON contiene un objeto con los campos:
   }
 }
 
-Descripción de cada campo:
-Parámetro	Descripción / Tipo
-timestamp	Fecha y hora ISO 8601 del momento del análisis.
-texto_original	Cadena de texto enviada por el usuario sin modificar.
-score	Puntuación compuesta en el rango [-1.0, 1.0] o [0.0, 1.0].
-nivel	Etiqueta cualitativa: POSITIVO, NEUTRAL o NEGATIVO.
-detalles	Desglose de probabilidades por categoría (suma = 1.0).
+### Descripción de cada campo:
+
+| Parámetro | Descripción / Tipo |
+| :--- | :--- |
+|**timestamp**|	Fecha y hora ISO 8601 del momento del análisis. |
+|**texto_original**|	Cadena de texto enviada por el usuario sin modificar.|
+|**score**|	Puntuación compuesta en el rango [-1.0, 1.0] o [0.0, 1.0]. |
+|**nivel**|	Etiqueta cualitativa: POSITIVO, NEUTRAL o NEGATIVO. |
+|**detalles**|	Desglose de probabilidades por categoría (suma = 1.0). | 
 
 ## 4. Formato TXT
 El archivo TXT es una representación legible del mismo análisis:
@@ -59,6 +63,7 @@ Negativo:    4%
 
 ## 5. guardar.py — API de escritura
 La función principal es guardar_resultado(resultado). Recibe el diccionario de resultado, genera la marca de tiempo, y escribe ambos formatos de forma atómica.
+
 from almacenamiento.guardar import guardar_resultado
 
 resultado = {
@@ -72,8 +77,9 @@ rutas = guardar_resultado(resultado)
 # rutas["json"] -> "almacenamiento/resultados/json/analisis_2026-04-14_XXXXXX.json"
 # rutas["txt"]  -> "almacenamiento/resultados/txt/analisis_2026-04-14_XXXXXX.txt"
 
-6. leer.py — API de lectura
+## 6. leer.py — API de lectura
 Permite recuperar análisis guardados anteriormente. Devuelve el mismo diccionario que se pasó a guardar_resultado.
+
 from almacenamiento.leer import leer_resultado, listar_resultados
 
 # Listar todos los análisis disponibles (orden cronológico inverso)

@@ -39,7 +39,10 @@ main.py  (punto de entrada)
 | **7 — Presentación** | La GUI muestra nivel, score y detalles al usuario. |
 
 ## 4. Principios de Diseño
-•	Separación de responsabilidades: cada módulo tiene una única razón para cambiar.
-•	Inyección implícita de dependencias: cliente.py importa directamente los módulos; para tests se pueden parchear con unittest.mock.
-•	Sin estado global: los resultados se pasan como valores de retorno, no como variables globales.
-•	Almacenamiento desacoplado: la capa de negocio no sabe nada del formato de archivo.
+
+| Principio | Aplicación en el Proyecto | Beneficio Técnico |
+| :--- | :--- | :--- |
+| **Separación de Responsabilidades** | Cada módulo (NLP, niveles, persistencia) tiene una única razón para cambiar. | Facilita el mantenimiento y la escalabilidad del sistema. |
+| **Inyección de Dependencias** | `cliente.py` importa módulos que pueden ser parcheados con `unittest.mock` para pruebas. | Permite realizar tests unitarios aislados y robustos. |
+| **Sin Estado Global** | Los resultados se pasan como valores de retorno entre funciones, no como variables globales. | Evita efectos secundarios y hace que el código sea predecible. |
+| **Almacenamiento Desacoplado** | La capa de negocio ignora el formato de archivo final (JSON/TXT); solo entrega el diccionario. | Permite cambiar la base de datos o el formato sin tocar la lógica de análisis. |
