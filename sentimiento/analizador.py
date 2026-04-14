@@ -1,8 +1,5 @@
 # ============================================
 # sentimiento/analizador.py
-# Responsabilidad única: ejecutar las llamadas a la API de OpenAI
-# y mapear la respuesta a los modelos de datos definidos en niveles.py.
-# Recibe el cliente como dependencia inyectada (no lo crea).
 # ============================================
 
 import json
@@ -20,21 +17,11 @@ from sentimiento.niveles import (
 
 
 def _truncar(texto: str, limite: int = 100) -> str:
-    """
-    Trunca el texto al límite indicado y añade '...' si fue recortado.
-
-    Args:
-        texto: cadena original.
-        limite: número máximo de caracteres.
-
-    Returns:
-        Cadena truncada.
-    """
     return texto[:limite] + "..." if len(texto) > limite else texto
 
 
 def _llamar_api(
-    cliente,
+    cliente,  # <-- QUITADO : OpenAI
     prompt_sistema: str,
     texto_usuario: str,
     modelo: str = MODELO_DEFAULT,
@@ -44,10 +31,9 @@ def _llamar_api(
     """
     try:
         # Combinamos las instrucciones y el texto para el modelo local
-        prompt_completo = f"{prompt_sistema}\n\nTexto: {texto_usuario}"
+        prompt_completo = f"{prompt_sistema}\n{texto_usuario}"
         
         # El pipeline de transformers se llama como una función directamente
-        # max_new_tokens controla el largo de la respuesta
         resultado = cliente(prompt_completo, max_new_tokens=256, truncation=True)
         
         # Extraemos el texto de la estructura [{'generated_text': '...'}]
@@ -56,50 +42,31 @@ def _llamar_api(
     except Exception as exc:
         raise RuntimeError(f"Error en la ejecución del modelo local: {exc}") from exc
 
+
 # ── Análisis básico ───────────────────────────────────────────────────────────
 
 def analizar_basico(cliente, texto: str) -> ResultadoBasico:
-    """
-    Analiza el sentimiento del texto a nivel básico (solo categoría).
+    respuesta_raw = _llamar_api(cliente, PROMPT_BASICO, texto)
+    sentimiento = respuesta_raw.lower()
 
-    Args:
-        cliente: instancia de OpenAI.
-        texto: texto a analizar.
-
-    Returns:
-        ResultadoBasico con la categoría de sentimiento.
-    """
-    respuesta = _llamar_api(cliente, PROMPT_BASICO, texto)
-
-    return ResultadoBasico(
-        nivel="básico",
-        sentimiento=respuesta.lower(),
-        texto_original=_truncar(texto),
-    )
+    if "positivo" in sentimiento:
+        return ResultadoBasico(nivel="básico", sentimiento="positivo", texto_original=_truncar(texto))
+    if "negativo" in sentimiento:
+        return ResultadoBasico(nivel="básico", sentimiento="negativo", texto_original=_truncar(texto))
+    
+    return ResultadoBasico(nivel="básico", sentimiento="neutro", texto_original=_truncar(texto))
 
 
 # ── Análisis intermedio ───────────────────────────────────────────────────────
 
-def analizar_intermedio(cliente, texto: str) -> ResultadoIntermedio:
-    """
-    Analiza el sentimiento del texto a nivel intermedio:
-    polaridad, emociones e intensidad.
-
-    Args:
-        cliente: instancia de OpenAI.
-        texto: texto a analizar.
-
-    Returns:
-        ResultadoIntermedio con los campos enriquecidos,
-        o un dict de error si la respuesta no es JSON válido.
-    """
+def analizar_intermedio(cliente, texto: str) -> ResultadoIntermedio: 
     respuesta_raw = _llamar_api(cliente, PROMPT_INTERMEDIO, texto)
 
     try:
         datos: dict = json.loads(respuesta_raw)
-        datos["nivel"] = "intermedio"  # <--- AQUÍ VA PARA EL ÉXITO
+        datos["nivel"] = "intermedio"
         datos["texto_original"] = _truncar(texto)
-        return ResultadoIntermedio(**datos)  # type: ignore[arg-type]
+        return ResultadoIntermedio(**datos)
     except (json.JSONDecodeError, TypeError) as exc:
         return ResultadoIntermedio(
             nivel="intermedio",
@@ -111,25 +78,13 @@ def analizar_intermedio(cliente, texto: str) -> ResultadoIntermedio:
 # ── Análisis avanzado ─────────────────────────────────────────────────────────
 
 def analizar_avanzado(cliente, texto: str) -> ResultadoAvanzado:
-    """
-    Analiza el sentimiento del texto a nivel avanzado:
-    fragmentos, justificación, tonalidad y recomendación.
-
-    Args:
-        cliente: instancia de OpenAI.
-        texto: texto a analizar.
-
-    Returns:
-        ResultadoAvanzado con el análisis en profundidad,
-        o un dict de error si la respuesta no es JSON válido.
-    """
     respuesta_raw = _llamar_api(cliente, PROMPT_AVANZADO, texto)
 
     try:
         datos: dict = json.loads(respuesta_raw)
-        datos["nivel"] = "avanzado"  # <--- CRÍTICO
+        datos["nivel"] = "avanzado"
         datos["texto_original"] = _truncar(texto)
-        return ResultadoAvanzado(**datos)  # type: ignore[arg-type]
+        return ResultadoAvanzado(**datos)
     except (json.JSONDecodeError, TypeError) as exc:
         return ResultadoAvanzado(
             nivel="avanzado",
