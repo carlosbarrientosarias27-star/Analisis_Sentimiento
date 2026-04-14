@@ -16,25 +16,33 @@ almacenamiento/
 
 ## 2. Convención de Nombres
 
-|**Patrón**|   analisis_YYYY-MM-DD_HHmmss.{json|txt} |
-|**Ejemplo**|  analisis_2026-04-14_130903.json | analisis_2026-04-14_131023.txt | 
+Patrón:   analisis_YYYY-MM-DD_HHmmss.{json|txt}
+Ejemplo:  analisis_2026-04-14_130903.json
+          analisis_2026-04-14_131023.txt
+
 Los archivos JSON y TXT de un mismo análisis comparten exactamente
 el mismo sufijo de fecha/hora, lo que los vincula sin metadatos extra.
 
 ## 3. Formato JSON
 Cada archivo JSON contiene un objeto con los campos:
 
-{
-  "timestamp": "2026-04-14T13:09:03",
-  "texto_original": "El producto es fantástico y muy útil.",
-  "score": 0.82,
-  "nivel": "POSITIVO",
-  "detalles": {
-    "positivo": 0.82,
-    "neutral":  0.14,
-    "negativo": 0.04
-  }
-}
+### 🔍 Resultado del Análisis
+`Archivo: analisis_2026-04-14_130903.json`
+
+| Métrica | Detalle |
+| :--- | :--- |
+| **Texto** | *El producto es fantástico y muy útil.* |
+| **Sentimiento** | **POSITIVO** |
+| **Confianza** | `0.82` |
+
+#### 📊 Distribución de Probabilidades
+| Clase | Probabilidad | Barra |
+| :--- | :---: | :--- |
+| **Positivo** | `82%` | ![#2cbe4e](https://via.placeholder.com/15/2cbe4e/2cbe4e.png) `████████░░` |
+| **Neutral** | `14%` | ![#cecece](https://via.placeholder.com/15/cecece/cecece.png) `█░░░░░░░░░` |
+| **Negativo** | `4%` | ![#ff0000](https://via.placeholder.com/15/ff0000/ff0000.png) `░░░░░░░░░░` |
+
+---
 
 ### Descripción de cada campo:
 
