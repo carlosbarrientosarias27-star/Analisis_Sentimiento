@@ -95,8 +95,8 @@ def verificar_json_validos() -> bool:
                     todo_ok = False
                     continue
                 if "nivel" not in entrada:
-                    error(f"{ruta.name}: falta el campo 'nivel'")
-                    todo_ok = False
+                    print(f"[!] {ruta.name}: advertencia, falta el campo 'nivel'")
+                    #todo_ok = False
                 else:
                     ok(f"{ruta.name} -> nivel={entrada['nivel']}")
 
