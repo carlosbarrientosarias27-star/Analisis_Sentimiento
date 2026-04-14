@@ -13,23 +13,24 @@ tests/
 ## 2. Ejecutar los Tests
 Todos los tests
 
-# Desde la raíz del proyecto
+### Desde la raíz del proyecto
 pytest
 
-# Con salida detallada
+### Con salida detallada
 pytest -v
 
-# Con reporte de cobertura
+### Con reporte de cobertura
 pytest --cov=sentimiento --cov=almacenamiento --cov-report=term-missing
 
 Un archivo o test concreto
-# Sólo los tests del analizador
+
+### Sólo los tests del analizador
 pytest tests/test_analizador.py -v
 
-# Un test específico por nombre
+### Un test específico por nombre
 pytest tests/test_analizador.py::test_sentimiento_positivo -v
 
-# Tests que coincidan con un patrón
+### Tests que coincidan con un patrón
 pytest -k "positivo or negativo" -v
 
 ## 3. Cobertura de Cada Archivo
@@ -53,7 +54,7 @@ pytest -k "positivo or negativo" -v
 ## 4. Fixtures (conftest.py)
 conftest.py define fixtures reutilizables disponibles automáticamente para todos los archivos de test:
 
-# conftest.py
+### conftest.py
 
 import pytest
 from sentimiento.cliente import ClienteSentimiento
@@ -86,7 +87,8 @@ Crea tests/test_<modulo>.py. pytest descubrirá automáticamente cualquier archi
 
 - Paso 2 — Escribir el test
 
-# tests/test_niveles.py
+### tests/test_niveles.py
+
 from sentimiento.niveles import clasificar_nivel
 
 def test_umbral_positivo():
@@ -107,6 +109,7 @@ def test_analizar_con_cliente(cliente):
 ## 6. Configuración de pytest
 
 El archivo pytest.ini en la raíz controla el comportamiento global:
+
 [pytest]
 testpaths = tests
 python_files = test_*.py
@@ -118,7 +121,8 @@ filterwarnings = ignore::DeprecationWarning
 
 El workflow .github/workflows/pipeline.yml ejecuta los tests automáticamente en cada push y pull request:
 
-# .github/workflows/pipeline.yml (resumen)
+### .github/workflows/pipeline.yml (resumen)
+
 jobs:
   test:
     runs-on: ubuntu-latest
