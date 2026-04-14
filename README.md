@@ -2,7 +2,7 @@
 
 ![CI Pipeline](https://github.com/TU_USUARIO/ANALISIS_SENTIMIENTO/actions/workflows/pipeline.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![pytest](https://img.shields.io/badge/tests-pytest-green?logo=pytest)
+![pytest](https://img.shields.io/badge/tests-pytest-red?logo=pytest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 Sistema modular de **análisis de sentimiento** en Python que clasifica textos en tres niveles cualitativos (POSITIVO, NEUTRAL, NEGATIVO) con soporte para análisis en batch, persistencia automática de resultados e interfaz gráfica de usuario.
