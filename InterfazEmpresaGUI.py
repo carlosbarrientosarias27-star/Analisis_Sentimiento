@@ -26,9 +26,12 @@ class AppSentimiento:
     def _inicializar_cliente(self):
         try:
             self.cliente = crear_cliente()
-            self.barra_estado.config(text="Conectado a OpenAI", fg="green")
+            self.barra_estado.config(text="Conectado a OpenAI / Local", fg="green")
+        except ImportError:
+            self.barra_estado.config(text="Error: Instala PyTorch (pip install torch)", fg="red")
+            messagebox.showerror("Dependencia Faltante", "No se encontró PyTorch. Por favor, instálalo para realizar el análisis.")
         except Exception as e:
-            self.barra_estado.config(text=f"Error de conexion: {str(e)}", fg="red")
+            self.barra_estado.config(text=f"Error: {str(e)}", fg="red")
 
     def _construir_interfaz(self):
         # Marco principal
