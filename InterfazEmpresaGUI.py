@@ -313,7 +313,7 @@ class AppSentimiento:
             }
             self.texto_actual = texto
 
-            rutas = guardar_resultado(texto, self.resultados)
+            guardar_resultado(texto, self.resultados)
 
             self._mostrar_resultados(resultado_b, resultado_i, resultado_a)
             self.actualizar_historial()
