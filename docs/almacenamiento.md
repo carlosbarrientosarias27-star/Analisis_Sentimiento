@@ -69,7 +69,6 @@ El archivo TXT es una representación legible del mismo análisis:
 
 ---
 
-
 ## 5. guardar.py — API de escritura
 
 La función principal es guardar_resultado(resultado). Recibe el diccionario de resultado, genera la marca de tiempo, y escribe ambos formatos de forma atómica.
@@ -84,8 +83,8 @@ resultado = {
 }
 
 rutas = guardar_resultado(resultado)
-# rutas["json"] -> "almacenamiento/resultados/json/analisis_2026-04-14_XXXXXX.json"
-# rutas["txt"]  -> "almacenamiento/resultados/txt/analisis_2026-04-14_XXXXXX.txt"
+### rutas["json"] -> "almacenamiento/resultados/json/analisis_2026-04-14_XXXXXX.json"
+### rutas["txt"]  -> "almacenamiento/resultados/txt/analisis_2026-04-14_XXXXXX.txt"
 
 ## 6. leer.py — API de lectura
 Permite recuperar análisis guardados anteriormente. Devuelve el mismo diccionario que se pasó a guardar_resultado.
