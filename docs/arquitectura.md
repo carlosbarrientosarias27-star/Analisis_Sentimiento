@@ -11,33 +11,20 @@ main.py  (punto de entrada)
               ├── sentimiento/multitexto.py  (batch)
               └── almacenamiento/guardar.py  (persistencia)
                    └── almacenamiento/leer.py  (lectura)
-                   ```
+```
 
 ## 2. Descripción de Módulos
 
-- main.py — Punto de entrada
-Inicializa la aplicación y lanza la interfaz gráfica. Gestiona la configuración global y el ciclo de vida del proceso.
-
-- InterfazEmpresaGUI.py — Interfaz Gráfica
-Capa de presentación (Tkinter). Captura el texto de entrada del usuario y delega el análisis a cliente.py. Muestra los resultados devueltos sin conocer la lógica interna.
-
-- sentimiento/cliente.py — Orquestador
-Punto de entrada de la capa de negocio. Coordina la llamada al analizador, aplica la clasificación de niveles y decide si guardar los resultados. Es la única clase que conoce todos los demás módulos del paquete.
-
-- sentimiento/analizador.py — Motor NLP
-Encapsula la librería de análisis de sentimiento (p. ej. VADER, TextBlob o transformers). Expone una API uniforme para que cliente.py no dependa de la librería concreta.
-
-- sentimiento/niveles.py — Clasificador de niveles
-Traduce las puntuaciones numéricas del analizador a niveles cualitativos (POSITIVO / NEUTRAL / NEGATIVO) según umbrales configurables. Separar esta lógica facilita ajustar los umbrales sin tocar el motor NLP.
-
-- sentimiento/multitexto.py — Procesamiento en batch
-Permite analizar listas de textos en una sola llamada. Itera sobre los ítems, delega en analizador.py y devuelve una colección de resultados.
-
-- almacenamiento/guardar.py — Persistencia
-Escribe los resultados en disco en formato JSON y TXT con nombres de archivo que incluyen marca de tiempo. Desacopla la serialización del resto de la lógica.
-
-- almacenamiento/leer.py — Lectura
-Lee y deserializa los archivos generados por guardar.py. Permite recuperar análisis anteriores para mostrarlos en la interfaz o procesarlos de nuevo.
+| Módulo / Archivo | Responsabilidad Principal | Descripción Detallada |
+| :--- | :--- | :--- |
+| **`main.py`** | Punto de entrada | Inicializa la aplicación y lanza la interfaz gráfica. Gestiona la configuración global y el ciclo de vida del proceso. |
+| **`InterfazEmpresaGUI.py`** | Interfaz Gráfica | Capa de presentación (Tkinter). Captura el texto de entrada del usuario y delega el análisis a `cliente.py`. |
+| **`sentimiento/cliente.py`** | Orquestador | Punto de entrada de la capa de negocio. Coordina al analizador, clasifica niveles y gestiona la persistencia. |
+| **`sentimiento/analizador.py`** | Motor NLP | Encapsula la librería de análisis (VADER, TextBlob, etc.). Expone una API uniforme para el orquestador. |
+| **`sentimiento/niveles.py`** | Clasificador | Traduce puntuaciones numéricas a etiquetas cualitativas (POSITIVO / NEUTRAL / NEGATIVO) según umbrales. |
+| **`sentimiento/multitexto.py`** | Procesamiento Batch | Permite analizar listas de textos en una sola llamada, delegando el procesamiento individual al motor NLP. |
+| **`almacenamiento/guardar.py`** | Persistencia | Escribe los resultados en disco (JSON/TXT) con marcas de tiempo, desacoplando la serialización. |
+| **`almacenamiento/leer.py`** | Lectura | Lee y deserializa los archivos generados para recuperar análisis anteriores y mostrarlos en la interfaz. |
 
 ## 3. Flujo de Datos
 
