@@ -3,21 +3,12 @@ import json
 from unittest.mock import MagicMock
 from sentimiento.analizador import analizar_basico, analizar_intermedio, analizar_avanzado
 
-# --- Fixtures ---
-
 @pytest.fixture
 def mock_pipeline():
-    """
-    Simula el pipeline de transformers.
-    Se comporta como una función: cliente(texto)
-    """
-    return MagicMock()
+    return MagicMock() # Representa el pipeline de transformers
 
 @pytest.fixture
 def mock_response():
-    """
-    Simula la respuesta estándar de Hugging Face: [{'generated_text': '...'}]
-    """
     def _crear(contenido):
         return [{"generated_text": contenido}]
     return _crear

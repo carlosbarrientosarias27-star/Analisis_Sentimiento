@@ -6,6 +6,12 @@
 
 from typing import TypedDict
 
+# --- CONFIGURACIÓN ---
+MODELO_DEFAULT = "finiteautomata/beto-sentiment-analysis"
+PROMPT_BASICO = "Clasifica el sentimiento: positivo, negativo o neutro."
+PROMPT_INTERMEDIO = "Responde en JSON con: polaridad (float), emociones (lista), intensidad (str)."
+PROMPT_AVANZADO = "Responde en JSON con: fragmentos (lista), justificacion (str), tonalidad (str), recomendacion (str)."
+
 # ── Modelos de datos ──────────────────────────────────────────────────────────
 
 class ResultadoBasico(TypedDict):

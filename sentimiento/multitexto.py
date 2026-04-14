@@ -30,20 +30,13 @@ class ResultadoMultiple(TypedDict):
 
 # ── Función principal ─────────────────────────────────────────────────────────
 
-def analizar_multitexto(cliente: OpenAI, textos: list[str]) -> ResultadoMultiple:
+def analizar_multitexto(cliente, textos: list[str]) -> ResultadoMultiple:
     """
-    Analiza una lista de textos en nivel intermedio y calcula estadísticas
-    agregadas sobre el conjunto completo.
-
+    Analiza una lista de textos en nivel intermedio.
+    
     Args:
-        cliente: instancia de OpenAI inyectada desde fuera.
+        cliente: instancia del modelo local (pipeline de transformers).
         textos: lista de cadenas a analizar.
-
-    Returns:
-        ResultadoMultiple con los resultados individuales y las estadísticas.
-
-    Raises:
-        ValueError: si la lista de textos está vacía.
     """
     if not textos:
         raise ValueError("La lista de textos no puede estar vacía.")
@@ -51,6 +44,7 @@ def analizar_multitexto(cliente: OpenAI, textos: list[str]) -> ResultadoMultiple
     resultados: list[ResultadoIntermedio] = []
 
     for texto in textos:
+        # Aquí se inyecta el cliente local
         resultado = analizar_intermedio(cliente, texto)
         resultados.append(resultado)
 
