@@ -15,15 +15,17 @@ almacenamiento/
 ```
 
 ## 2. Convención de Nombres
-Patrón:   analisis_YYYY-MM-DD_HHmmss.{json|txt}
-Ejemplo:  analisis_2026-04-14_130903.json
-          analisis_2026-04-14_131023.txt
+
+|**Patrón:**|   analisis_YYYY-MM-DD_HHmmss.{json|txt} |
+|**Ejemplo:**|  analisis_2026-04-14_130903.json |
+                analisis_2026-04-14_131023.txt | 
 
 Los archivos JSON y TXT de un mismo análisis comparten exactamente
 el mismo sufijo de fecha/hora, lo que los vincula sin metadatos extra.
 
 ## 3. Formato JSON
 Cada archivo JSON contiene un objeto con los campos:
+
 {
   "timestamp": "2026-04-14T13:09:03",
   "texto_original": "El producto es fantástico y muy útil.",
@@ -47,21 +49,23 @@ Cada archivo JSON contiene un objeto con los campos:
 |**detalles**|	Desglose de probabilidades por categoría (suma = 1.0). | 
 
 ## 4. Formato TXT
+
 El archivo TXT es una representación legible del mismo análisis:
-========================================
-ANÁLISIS DE SENTIMIENTO
-Fecha: 2026-04-14 13:09:03
-========================================
-Texto: El producto es fantástico y muy útil.
-----------------------------------------
-Nivel:      POSITIVO
-Score:      0.82
-Positivo:   82%
-Neutral:    14%
-Negativo:    4%
-========================================
+
+## 📝 Informe de Análisis de Sentimiento
+
+> **Fecha:** 2026-04-14 13:09:03  
+> **Texto:** *"El producto es fantástico y muy útil."*
+
+| Nivel | Score | Positivo | Neutral | Negativo |
+| :--- | :---: | :---: | :---: | :---: |
+| **POSITIVO** | `0.82` | `82%` | `14%` | `4%` |
+
+---
+
 
 ## 5. guardar.py — API de escritura
+
 La función principal es guardar_resultado(resultado). Recibe el diccionario de resultado, genera la marca de tiempo, y escribe ambos formatos de forma atómica.
 
 from almacenamiento.guardar import guardar_resultado
@@ -82,10 +86,10 @@ Permite recuperar análisis guardados anteriormente. Devuelve el mismo diccionar
 
 from almacenamiento.leer import leer_resultado, listar_resultados
 
-# Listar todos los análisis disponibles (orden cronológico inverso)
+### Listar todos los análisis disponibles (orden cronológico inverso)
 archivos = listar_resultados()   # lista de rutas JSON
 
-# Leer un análisis concreto
+### Leer un análisis concreto
 datos = leer_resultado(archivos[0])
 print(datos["nivel"])   # "POSITIVO"
 
