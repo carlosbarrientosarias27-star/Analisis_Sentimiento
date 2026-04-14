@@ -6,7 +6,7 @@
 # ============================================
 
 import json
-from openai import OpenAI
+from transformers import pipeline
 
 from sentimiento.niveles import (
     MODELO_DEFAULT,
