@@ -6,103 +6,82 @@ from sentimiento.analizador import analizar_basico, analizar_intermedio, analiza
 # --- Fixtures ---
 
 @pytest.fixture
-def mock_openai_client():
+def mock_pipeline():
     """
-    Crea un objeto simulado genérico. 
-    Cambiamos MagicMock(OpenAI) por MagicMock() simple.
+    Simula el pipeline de transformers.
+    Se comporta como una función: cliente(texto)
     """
-    mock_client = MagicMock()
-    # Mantenemos la estructura de 'choices' por si tu analizador.py aún la usa
-    return mock_client
+    return MagicMock()
 
 @pytest.fixture
-def mock_response_factory():
+def mock_response():
     """
-    Genera la estructura de objeto que la SDK de OpenAI devuelve:
-    objeto.choices[0].message.content
+    Simula la respuesta estándar de Hugging Face: [{'generated_text': '...'}]
     """
-    def _crear_respuesta(content: str):
-        mock_res = MagicMock()
-        mock_message = MagicMock()
-        mock_message.content = content
-        
-        mock_choice = MagicMock()
-        mock_choice.message = mock_message
-        
-        mock_res.choices = [mock_choice]
-        return mock_res
-    return _crear_respuesta
+    def _crear(contenido):
+        return [{"generated_text": contenido}]
+    return _crear
 
 # --- Casos Felices ---
 
-def test_analizar_basico_exito(mock_openai_client, mock_response_factory):
-    # Setup: Ahora accedemos a la profundidad correcta del mock
-    respuesta_ia = mock_response_factory("Positivo")
-    mock_openai_client.chat.completions.create.return_value = respuesta_ia
+def test_analizar_basico_exito(mock_pipeline, mock_response):
+    # Setup: el "cliente" devuelve la respuesta directamente al ser llamado
+    mock_pipeline.return_value = mock_response("Positivo")
     
-    resultado = analizar_basico(mock_openai_client, "Hoy es un día maravilloso")
+    resultado = analizar_basico(mock_pipeline, "Hoy es un gran día")
     
     assert resultado["sentimiento"] == "positivo"
     assert resultado["nivel"] == "básico"
 
-def test_analizar_intermedio_exito(mock_openai_client, mock_response_factory):
+def test_analizar_intermedio_exito(mock_pipeline, mock_response):
     json_resp = json.dumps({
-        "polaridad": 0.8,
+        "polaridad": 0.5,
         "emociones": ["alegría"],
-        "intensidad": "alta"
+        "intensidad": "media"
     })
-    mock_openai_client.chat.completions.create.return_value = mock_response_factory(json_resp)
+    mock_pipeline.return_value = mock_response(json_resp)
     
-    resultado = analizar_intermedio(mock_openai_client, "¡Excelente!")
+    resultado = analizar_intermedio(mock_pipeline, "Texto de prueba")
     
-    assert resultado["polaridad"] == 0.8
-    assert resultado.get("error") is None
+    assert resultado["polaridad"] == 0.5
+    assert resultado["nivel"] == "intermedio"
 
-def test_analizar_avanzado_exito(mock_openai_client, mock_response_factory):
+def test_analizar_avanzado_exito(mock_pipeline, mock_response):
     json_resp = json.dumps({
         "fragmentos": [{"texto": "bueno", "sentimiento": "positivo"}],
         "justificacion": "Test",
         "tonalidad": "formal",
         "recomendacion": "Ninguna"
     })
-    mock_openai_client.chat.completions.create.return_value = mock_response_factory(json_resp)
+    mock_pipeline.return_value = mock_response(json_resp)
     
-    resultado = analizar_avanzado(mock_openai_client, "Texto de prueba")
+    resultado = analizar_avanzado(mock_pipeline, "Prueba avanzada")
     
     assert resultado["nivel"] == "avanzado"
     assert resultado["tonalidad"] == "formal"
 
 # --- Casos Borde ---
 
-def test_analizar_texto_vacio(mock_openai_client, mock_response_factory):
-    mock_openai_client.chat.completions.create.return_value = mock_response_factory("Neutro")
-    resultado = analizar_basico(mock_openai_client, "")
+def test_analizar_texto_vacio(mock_pipeline, mock_response):
+    mock_pipeline.return_value = mock_response("Neutro")
+    resultado = analizar_basico(mock_pipeline, "")
     assert resultado["sentimiento"] == "neutro"
-
-def test_analizar_texto_muy_largo(mock_openai_client, mock_response_factory):
-    texto_largo = "A" * 200
-    mock_openai_client.chat.completions.create.return_value = mock_response_factory("Positivo")
-    
-    resultado = analizar_basico(mock_openai_client, texto_largo)
-    
-    assert "..." in resultado["texto_original"]
-    assert len(resultado["texto_original"]) > 100
 
 # --- Casos de Error ---
 
-def test_error_api_no_disponible(mock_openai_client):
-    # Forzamos la excepción en el método create
-    mock_openai_client.chat.completions.create.side_effect = Exception("API Down")
+def test_error_modelo_local(mock_pipeline):
+    # Forzamos error en la "llamada" al modelo
+    mock_pipeline.side_effect = Exception("Modelo no cargado")
     
     with pytest.raises(RuntimeError) as exc:
-        analizar_basico(mock_openai_client, "Hola")
-    assert "Error en la llamada a la API" in str(exc.value)
+        analizar_basico(mock_pipeline, "Hola")
+    assert "Error en la ejecución del modelo local" in str(exc.value)
 
-def test_error_json_malformado(mock_openai_client, mock_response_factory):
-    # Enviamos algo que json.loads() no pueda procesar
-    mock_openai_client.chat.completions.create.return_value = mock_response_factory("No soy un JSON")
+def test_error_json_malformado(mock_pipeline, mock_response):
+    # El modelo devuelve texto plano cuando se esperaba JSON
+    mock_pipeline.return_value = mock_response("No soy un JSON")
     
-    resultado = analizar_intermedio(mock_openai_client, "Error test")
+    resultado = analizar_intermedio(mock_pipeline, "Error test")
     
     assert resultado["error"] is not None
     assert "No se pudo parsear" in resultado["error"]

@@ -34,44 +34,31 @@ def _truncar(texto: str, limite: int = 100) -> str:
 
 
 def _llamar_api(
-    cliente: OpenAI,
+    cliente,
     prompt_sistema: str,
     texto_usuario: str,
     modelo: str = MODELO_DEFAULT,
 ) -> str:
     """
-    Realiza una llamada a la API de chat completions y devuelve el contenido
-    de la respuesta como cadena de texto.
-
-    Args:
-        cliente: instancia de OpenAI ya configurada.
-        prompt_sistema: instrucción de sistema para el modelo.
-        texto_usuario: texto que el usuario quiere analizar.
-        modelo: identificador del modelo a usar.
-
-    Returns:
-        Contenido textual de la respuesta del modelo.
-
-    Raises:
-        RuntimeError: si la llamada a la API falla.
+    Realiza una llamada al modelo local (Transformers) y devuelve el texto.
     """
     try:
-        response = cliente.chat.completions.create(
-            model=modelo,
-            messages=[
-                {"role": "system", "content": prompt_sistema},
-                {"role": "user", "content": texto_usuario},
-            ],
-            temperature=0.0,
-        )
-        return response.choices[0].message.content.strip()
+        # Combinamos las instrucciones y el texto para el modelo local
+        prompt_completo = f"{prompt_sistema}\n\nTexto: {texto_usuario}"
+        
+        # El pipeline de transformers se llama como una función directamente
+        # max_new_tokens controla el largo de la respuesta
+        resultado = cliente(prompt_completo, max_new_tokens=256, truncation=True)
+        
+        # Extraemos el texto de la estructura [{'generated_text': '...'}]
+        return resultado[0]['generated_text'].strip()
+        
     except Exception as exc:
-        raise RuntimeError(f"Error en la llamada a la API de OpenAI: {exc}") from exc
-
+        raise RuntimeError(f"Error en la ejecución del modelo local: {exc}") from exc
 
 # ── Análisis básico ───────────────────────────────────────────────────────────
 
-def analizar_basico(cliente: OpenAI, texto: str) -> ResultadoBasico:
+def analizar_basico(cliente, texto: str) -> ResultadoBasico:
     """
     Analiza el sentimiento del texto a nivel básico (solo categoría).
 
@@ -93,7 +80,7 @@ def analizar_basico(cliente: OpenAI, texto: str) -> ResultadoBasico:
 
 # ── Análisis intermedio ───────────────────────────────────────────────────────
 
-def analizar_intermedio(cliente: OpenAI, texto: str) -> ResultadoIntermedio:
+def analizar_intermedio(cliente, texto: str) -> ResultadoIntermedio:
     """
     Analiza el sentimiento del texto a nivel intermedio:
     polaridad, emociones e intensidad.
@@ -123,7 +110,7 @@ def analizar_intermedio(cliente: OpenAI, texto: str) -> ResultadoIntermedio:
 
 # ── Análisis avanzado ─────────────────────────────────────────────────────────
 
-def analizar_avanzado(cliente: OpenAI, texto: str) -> ResultadoAvanzado:
+def analizar_avanzado(cliente, texto: str) -> ResultadoAvanzado:
     """
     Analiza el sentimiento del texto a nivel avanzado:
     fragmentos, justificación, tonalidad y recomendación.
