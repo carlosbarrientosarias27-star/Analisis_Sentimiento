@@ -3,8 +3,6 @@
 # ============================================
 
 import json
-from transformers import pipeline
-
 from sentimiento.niveles import (
     MODELO_DEFAULT,
     PROMPT_BASICO,

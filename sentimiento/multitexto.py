@@ -5,8 +5,6 @@
 # ============================================
 
 from typing import TypedDict
-from transformers import pipeline
-
 from sentimiento.analizador import analizar_intermedio
 from sentimiento.niveles import ResultadoIntermedio
 
