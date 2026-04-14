@@ -15,7 +15,7 @@ from sentimiento.analizador import Analizador
 
 a = Analizador()
 res = a.analizar("Me encanta este producto")
-# {"score": 0.88, "positivo": 0.88, "neutral": 0.09, "negativo": 0.03}
+### {"score": 0.88, "positivo": 0.88, "neutral": 0.09, "negativo": 0.03}
 
 ## sentimiento.niveles
 
