@@ -5,30 +5,28 @@
 # ============================================
 
 import os
-from openai import OpenAI
-from dotenv import load_dotenv
+import torch
+from transformers import pipeline
 
-load_dotenv() # <--- Esto es vital para que lea el archivo .env
-api_key = os.getenv("OPENAI_API_KEY")
-
-
-def crear_cliente() -> OpenAI:
+def crear_cliente():
     """
-    Carga las variables de entorno y devuelve un cliente OpenAI configurado.
-
+    Carga un modelo de análisis de sentimiento local usando Transformers.
+    
     Returns:
-        OpenAI: instancia lista para hacer llamadas a la API.
-
-    Raises:
-        EnvironmentError: si la variable OPENAI_API_KEY no está definida.
+        pipeline: Una tubería de Hugging Face lista para procesar texto.
     """
-    load_dotenv()
-
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise EnvironmentError(
-            "La variable de entorno OPENAI_API_KEY no está definida. "
-            "Comprueba tu archivo .env o las variables del sistema."
-        )
-
-    return OpenAI(api_key=api_key)
+    # Puedes elegir un modelo específico. 
+    # Si no pones nada, usará 'distilbert-base-uncased-finetuned-sst-2-english' por defecto.
+    # Para español, te recomiendo: "pysentimiento/robertuito-sentiment-analysis"
+    nombre_modelo = "pysentimiento/robertuito-sentiment-analysis"
+    
+    print(f"Cargando modelo local: {nombre_modelo}...")
+    
+    # La pipeline se encarga de descargar el modelo (solo la primera vez) 
+    # y de gestionar el tokenizador y el modelo automáticamente.
+    analizador = pipeline(
+        "sentiment-analysis", 
+        model=nombre_modelo
+    )
+    
+    return analizador
