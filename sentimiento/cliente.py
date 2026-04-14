@@ -4,8 +4,6 @@
 # Nunca instanciar el cliente fuera de este módulo.
 # ============================================
 
-import os
-import torch
 from transformers import pipeline
 
 def crear_cliente():

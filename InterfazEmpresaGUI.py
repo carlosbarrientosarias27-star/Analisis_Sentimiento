@@ -1,7 +1,6 @@
 # InterfazEmpresaGUI.py - GUI para Análisis de Sentimiento
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
-from tkinter import font as tkfont
 from sentimiento.cliente import crear_cliente
 from sentimiento.niveles import basico, intermedio, avanzado
 from almacenamiento.guardar import guardar_resultado

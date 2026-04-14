@@ -1,14 +1,10 @@
 # ============================================
 # sentimiento/niveles.py
-# Responsabilidad única: definir los prompts de sistema y los modelos
-# de datos (TypedDict) para los tres niveles de análisis.
-# No contiene lógica de red ni de I/O.
+# Responsabilidad única: procesar los resultados de la pipeline local
+# y estructurarlos en los modelos de datos (TypedDict).
 # ============================================
 
-
-import json
 from typing import TypedDict
-
 
 # ── Modelos de datos ──────────────────────────────────────────────────────────
 
@@ -18,7 +14,6 @@ class ResultadoBasico(TypedDict):
     sentimiento: str          # "positivo" | "negativo" | "neutral"
     texto_original: str
 
-
 class Emociones(TypedDict):
     """Puntuaciones por emoción (0-1)."""
     alegria: float
@@ -26,7 +21,6 @@ class Emociones(TypedDict):
     enojo: float
     sorpresa: float
     miedo: float
-
 
 class ResultadoIntermedio(TypedDict, total=False):
     """Resultado del análisis intermedio: polaridad, emociones e intensidad."""
@@ -36,15 +30,11 @@ class ResultadoIntermedio(TypedDict, total=False):
     emociones: Emociones
     intensidad: str           # "baja" | "media" | "alta"
     texto_original: str
-    error: str
-    respuesta_raw: str
-
 
 class Fragmento(TypedDict):
     """Un fragmento de texto con su sentimiento individual."""
     texto: str
     sentimiento_individual: str
-
 
 class ResultadoAvanzado(TypedDict, total=False):
     """Resultado del análisis avanzado: justificación, tonalidad y recomendación."""
@@ -56,57 +46,20 @@ class ResultadoAvanzado(TypedDict, total=False):
     tonalidad: str
     recomendacion: str
     texto_original: str
-    error: str
-    respuesta_raw: str
-
-
-# ── Prompts de sistema ────────────────────────────────────────────────────────
-
-# Se definen como constantes de módulo (sin estado, sin efectos secundarios).
-
-PROMPT_BASICO: str = (
-    "Analiza el sentimiento del texto. "
-    "Responde SOLO con una palabra: positivo, negativo o neutral."
-)
-
-PROMPT_INTERMEDIO: str = """
-Analiza el sentimiento del texto.
-Responde ÚNICAMENTE en formato JSON válido con estas claves:
-- sentimiento: "positivo", "negativo" o "neutral"
-- polaridad: número entre -1 (muy negativo) y +1 (muy positivo)
-- emociones: objeto con puntuaciones 0-1 para alegria, tristeza, enojo, sorpresa, miedo
-- intensidad: "baja", "media" o "alta"
-No incluyas texto adicional fuera del JSON.
-""".strip()
-
-PROMPT_AVANZADO: str = """
-Analiza el sentimiento del texto en profundidad.
-Responde ÚNICAMENTE en formato JSON válido con estas claves:
-- sentimiento_global: "positivo", "negativo" o "neutral"
-- polaridad: número entre -1 y +1
-- fragmentos: lista de objetos {"texto": "...", "sentimiento_individual": "..."}
-- justificacion: explicación del análisis
-- tonalidad: "formal", "coloquial", "agresivo", "entusiasta", etc.
-- recomendacion: qué acción tomar según el sentimiento detectado
-No incluyas texto adicional fuera del JSON.
-""".strip()
-
-
-# ── Constante de modelo ───────────────────────────────────────────────────────
-
-MODELO_DEFAULT: str = "gpt-4o-mini"
 
 # ── Funciones de Análisis ─────────────────────────────────────────────────────
 
+# Mapeo interno para traducir las etiquetas del modelo RoBERTuito
+MAPPING_SENTIMIENTO = {"POS": "positivo", "NEG": "negativo", "NEU": "neutral"}
+
 def basico(texto: str, client) -> ResultadoBasico:
-    respuesta = client.chat.completions.create(
-        model=MODELO_DEFAULT,
-        messages=[
-            {"role": "system", "content": PROMPT_BASICO},
-            {"role": "user", "content": texto}
-        ]
-    )
-    sentimiento = respuesta.choices[0].message.content.strip().lower()
+    """
+    Usa la pipeline local para un análisis rápido.
+    client: objeto pipeline de Transformers devuelto por crear_cliente()
+    """
+    resultado = client(texto)[0]
+    sentimiento = MAPPING_SENTIMIENTO.get(resultado['label'], "neutral")
+    
     return {
         "nivel": "básico",
         "sentimiento": sentimiento,
@@ -114,27 +67,39 @@ def basico(texto: str, client) -> ResultadoBasico:
     }
 
 def intermedio(texto: str, client) -> ResultadoIntermedio:
-    respuesta = client.chat.completions.create(
-        model=MODELO_DEFAULT,
-        messages=[
-            {"role": "system", "content": PROMPT_INTERMEDIO},
-            {"role": "user", "content": texto}
-        ],
-        response_format={"type": "json_object"}
-    )
-    datos = json.loads(respuesta.choices[0].message.content)
-    datos.update({"nivel": "intermedio", "texto_original": texto})
-    return datos
+    """
+    Extrae la confianza del modelo como polaridad y define intensidad.
+    """
+    resultado = client(texto)[0]
+    sentimiento = MAPPING_SENTIMIENTO.get(resultado['label'], "neutral")
+    
+    # Calculamos polaridad: POS es positivo, NEG es negativo
+    score = resultado['score']
+    polaridad = round(score if resultado['label'] == "POS" else -score, 2)
+    
+    return {
+        "nivel": "intermedio",
+        "sentimiento": sentimiento,
+        "polaridad": polaridad,
+        "emociones": {"alegria": 0.0, "tristeza": 0.0, "enojo": 0.0, "sorpresa": 0.0, "miedo": 0.0},
+        "intensidad": "alta" if score > 0.8 else "media",
+        "texto_original": texto
+    }
 
 def avanzado(texto: str, client) -> ResultadoAvanzado:
-    respuesta = client.chat.completions.create(
-        model=MODELO_DEFAULT,
-        messages=[
-            {"role": "system", "content": PROMPT_AVANZADO},
-            {"role": "user", "content": texto}
-        ],
-        response_format={"type": "json_object"}
-    )
-    datos = json.loads(respuesta.choices[0].message.content)
-    datos.update({"nivel": "avanzado", "texto_original": texto})
-    return datos
+    """
+    Versión avanzada adaptada a modelos de clasificación local.
+    Nota: Los modelos locales no generan texto (justificaciones), solo clasifican.
+    """
+    res_int = intermedio(texto, client)
+    
+    return {
+        "nivel": "avanzado",
+        "sentimiento_global": res_int["sentimiento"],
+        "polaridad": res_int["polaridad"],
+        "fragmentos": [],
+        "justificacion": f"Análisis de confianza ({res_int['polaridad']}) mediante RoBERTuito.",
+        "tonalidad": "No disponible (Modelo Local)",
+        "recomendacion": "N/A",
+        "texto_original": texto
+    }
