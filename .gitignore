@@ -4,5 +4,4 @@ almacenamiento/resultados/txt/*
 !Heredado/InicioSentimiento.py/* 
 !almacenamiento/resultados/json/.gitkeep
 !almacenamiento/resultados/txt/.gitkeep
-!Heredado/InicioSentimiento.py/.gitkeep 
-.env/*
+!Heredado/InicioSentimiento.py/.gitkeep
